@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import Home from './pages/Home';
 import About from './pages/About';
@@ -8,12 +9,15 @@ import Admin from './pages/Admin';
 // IMPORT LOGO DARI FOLDER ASSETS
 import logoUm from './assets/logo-um.png'; 
 
-// Komponen pembungkus untuk membaca rute URL saat ini
 function AppContent() {
   const location = useLocation();
-
-  // Cek apakah halaman saat ini adalah halaman admin
   const isAdminRoute = location.pathname.startsWith('/admin');
+  
+  // STATE UNTUK MENU HP (HAMBURGER)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Fungsi untuk menutup menu otomatis saat link diklik (khusus HP)
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   return (
     <div style={{ width: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -22,9 +26,13 @@ function AppContent() {
       {!isAdminRoute && (
         <nav className="navbar" style={{ justifyContent: 'space-between' }}>
           
-          {/* BAGIAN KIRI: Logo UM dan Tulisan Identitas */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            {/* Memanggil logo dari import assets */}
+          {/* BAGIAN KIRI: Logo UM dan Tulisan Identitas (SEKARANG BISA DIKLIK) */}
+          <Link 
+            to="/" 
+            className="nav-brand" 
+            onClick={closeMobileMenu}
+            style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}
+          >
             <img 
               src={logoUm} 
               alt="Logo Universitas Negeri Malang" 
@@ -39,17 +47,26 @@ function AppContent() {
             }}>
               PPG Calon Guru 2026
             </span>
-          </div>
+          </Link>
+
+          {/* TOMBOL HAMBURGER (Hanya muncul di HP via CSS) */}
+          <button 
+            className="hamburger-btn" 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle Menu"
+          >
+            {isMobileMenuOpen ? '✕' : '☰'}
+          </button>
 
           {/* BAGIAN KANAN: Menu Navigasi */}
-          <div style={{ display: 'flex', gap: '30px', alignItems: 'center' }}>
-            <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>
+          <div className={`nav-menu ${isMobileMenuOpen ? 'open' : ''}`} style={{ display: 'flex', gap: '30px', alignItems: 'center' }}>
+            <Link to="/" onClick={closeMobileMenu} className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>
               Dashboard
             </Link>
-            <Link to="/about" className={`nav-link ${location.pathname === '/about' ? 'active' : ''}`}>
+            <Link to="/about" onClick={closeMobileMenu} className={`nav-link ${location.pathname === '/about' ? 'active' : ''}`}>
               Tentang Saya
             </Link>
-            <Link to="/ppg-corner" className={`nav-link ${location.pathname.startsWith('/ppg-corner') ? 'active' : ''}`}>
+            <Link to="/ppg-corner" onClick={closeMobileMenu} className={`nav-link ${location.pathname.startsWith('/ppg-corner') ? 'active' : ''}`}>
               PPG Corner
             </Link>
           </div>
@@ -72,7 +89,6 @@ function AppContent() {
   );
 }
 
-// Komponen Utama App
 export default function App() {
   return (
     <Router>

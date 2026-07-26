@@ -15,13 +15,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
 
 :root {
-  --bg-main: #FDFBF7; /* Putih tulang hangat (kertas jurnal) */
-  --card-bg: #FFFFFF; /* Putih bersih untuk kartu */
+  --bg-main: #FDFBF7; 
+  --card-bg: #FFFFFF; 
   --card-border: #E2E8F0; 
-  --text-main: #2D3748; /* Abu-abu kehitaman lembut */
-  --text-heading: #1A202C; /* Hitam pekat untuk judul */
+  --text-main: #2D3748; 
+  --text-heading: #1A202C; 
   --text-muted: #718096; 
-  --accent-color: #2B6CB0; /* Biru profesional */
+  --accent-color: #2B6CB0; 
   --accent-hover: #2C5282; 
   --accent-glow: rgba(43, 108, 176, 0.15); 
 }
@@ -50,7 +50,7 @@ h1, h2, h3, h4 {
   background: rgba(253, 251, 247, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  padding: 8px 40px; /* DIPERKECIL: sebelumnya 15px 40px */
+  padding: 8px 40px; 
   display: flex;
   gap: 35px;
   justify-content: center;
@@ -59,7 +59,7 @@ h1, h2, h3, h4 {
   top: 0;
   z-index: 100;
   border-bottom: 1px solid var(--card-border);
-  height: 55px; /* DIPERKECIL: sebelumnya 70px */
+  height: 55px; 
 }
 
 .nav-link {
@@ -74,6 +74,20 @@ h1, h2, h3, h4 {
 .nav-link:hover, .nav-link.active {
   color: var(--accent-color);
   font-weight: 600;
+}
+
+/* Tombol Hamburger (Disembunyikan di PC) */
+.hamburger-btn {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--text-heading);
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+.hamburger-btn:hover {
+  color: var(--accent-color);
 }
 
 /* --- Tombol Utama & Sekunder --- */
@@ -119,7 +133,7 @@ h1, h2, h3, h4 {
   color: #FFFFFF;
 }
 
-/* --- Container Umum (Untuk Halaman Selain Dashboard) --- */
+/* --- Container Umum --- */
 .container {
   max-width: 1000px;
   margin: 0 auto;
@@ -127,7 +141,7 @@ h1, h2, h3, h4 {
   animation: fadeUp 0.6s ease-out forwards;
 }
 
-/* --- Kartu (Digunakan di Halaman Artefak, About, Admin) --- */
+/* --- Kartu --- */
 .card {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
@@ -150,7 +164,7 @@ h1, h2, h3, h4 {
   max-width: 1100px; 
   margin: 0 auto;
   padding: 0 20px;
-  min-height: calc(100vh - 55px); /* DISESUAIKAN: agar pas dengan tinggi navbar baru (55px) */
+  min-height: calc(100vh - 55px); 
   display: flex;
   align-items: center; 
   justify-content: space-between;
@@ -158,7 +172,6 @@ h1, h2, h3, h4 {
   animation: fadeUp 0.8s ease-out forwards;
 }
 
-/* Bagian Kiri (Konten) */
 .hero-content {
   flex: 1;
   max-width: 600px; 
@@ -177,14 +190,12 @@ h1, h2, h3, h4 {
   letter-spacing: 1px;
 }
 
-/* --- NAMA TAMPIL UTUH (TANPA PEMOTONGAN) --- */
 .hero-title {
   font-size: clamp(1.8rem, 3.5vw, 3.2rem); 
   line-height: 1.2;
   margin-bottom: 10px;
 }
 
-/* --- STATUS TAMPIL UTUH --- */
 .hero-subtitle {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: clamp(1rem, 1.8vw, 1.2rem);
@@ -213,7 +224,6 @@ h1, h2, h3, h4 {
   flex-wrap: wrap;
 }
 
-/* Bagian Kanan (Visual / Foto) */
 .hero-visual {
   flex: 1;
   display: flex;
@@ -227,7 +237,6 @@ h1, h2, h3, h4 {
   max-width: 380px;
 }
 
-/* Foto utama berdesain portrait elegan */
 .hero-image {
   width: 100%;
   aspect-ratio: 3 / 4; 
@@ -243,7 +252,6 @@ h1, h2, h3, h4 {
   transform: translateY(-10px);
 }
 
-/* Aksen dekorasi di belakang foto */
 .image-backdrop {
   position: absolute;
   top: 20px;
@@ -261,13 +269,11 @@ h1, h2, h3, h4 {
   left: 30px;
 }
 
-/* Animasi Muncul */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* --- Kustomisasi Form Admin --- */
 input, textarea, select {
   background: #FFFFFF !important;
   color: var(--text-main) !important;
@@ -279,14 +285,46 @@ input:focus, textarea:focus, select:focus {
   box-shadow: 0 0 0 3px var(--accent-glow) !important;
 }
 
-/* --- RESPONSIVITAS HP (Tumpuk ke Bawah) --- */
+/* ==========================================================
+   RESPONSIVITAS OTOMATIS (HP & TABLET)
+   ========================================================== */
 @media (max-width: 900px) {
+  
+  /* 1. Navbar Menjadi Hamburger Menu */
+  .hamburger-btn {
+    display: block; /* Munculkan garis 3 di HP */
+  }
+
+  .navbar {
+    padding: 10px 20px !important;
+  }
+
+  .nav-menu {
+    display: none !important; /* Menu disembunyikan default */
+    flex-direction: column;
+    position: absolute;
+    top: 55px; /* Berada tepat di bawah navbar */
+    left: 0;
+    width: 100%;
+    background: #FFFFFF; /* Latar solid agar menutupi konten bawahnya */
+    padding: 20px 0 !important;
+    gap: 15px !important;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    border-bottom: 1px solid var(--card-border);
+  }
+
+  .nav-menu.open {
+    display: flex !important; /* Menu muncul saat tombol hamburger diklik */
+  }
+
+  /* 2. Beranda / Hero Responsif */
   .hero-container {
     flex-direction: column;
     justify-content: center;
     text-align: center;
     padding: 40px 20px;
     gap: 40px;
+    height: auto !important;
   }
   .hero-content {
     display: flex;
@@ -302,5 +340,33 @@ input:focus, textarea:focus, select:focus {
   }
   .image-backdrop {
     top: 15px; left: 15px;
+  }
+
+  /* 3. Panel Admin Responsif */
+  .admin-layout {
+    flex-direction: column !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .admin-sidebar {
+    width: 100% !important;
+    height: auto !important;
+    position: relative !important;
+    flex-shrink: 0;
+  }
+  .admin-main {
+    height: auto !important;
+    padding: 20px 15px !important;
+    overflow: visible !important;
+  }
+  .admin-content-box {
+    padding: 20px 15px !important;
+  }
+  
+  table {
+    font-size: 0.8rem !important;
+  }
+  th, td {
+    padding: 8px !important;
   }
 }
