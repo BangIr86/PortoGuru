@@ -52,7 +52,7 @@ export default function Admin() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (passcode === 'admin123') {
+    if (passcode === 'khoirulibad86') {
       setIsAuth(true); 
       showToast('Berhasil masuk ke panel admin!', 'success');
     } else {
@@ -230,7 +230,7 @@ export default function Admin() {
           <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#38BDF8' }}>Login Admin</h2>
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column' }}>
             <label style={{ marginBottom: '8px', fontSize: '0.9rem', color: '#94A3B8' }}>Kata Sandi Admin</label>
-            <input type="password" placeholder="admin123" value={passcode} onChange={(e) => setPasscode(e.target.value)} style={{ ...inputStyle, background: '#0F172A', color: '#FFFFFF', border: '1px solid #334155' }} />
+            <input type="password" placeholder="Masukkan kata sandi admin" value={passcode} onChange={(e) => setPasscode(e.target.value)} style={{ ...inputStyle, background: '#0F172A', color: '#FFFFFF', border: '1px solid #334155' }} />
             <button type="submit" style={{ padding: '12px', background: '#3B82F6', color: '#FFFFFF', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', marginTop: '10px' }}>Masuk Panel</button>
           </form>
           <div style={{ textAlign: 'center', marginTop: '20px' }}>
