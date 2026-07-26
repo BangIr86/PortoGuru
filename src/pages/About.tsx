@@ -28,7 +28,7 @@ export default function About() {
     return <div className="container" style={{ textAlign: 'center', marginTop: '50px' }}>Gagal memuat data profil.</div>;
   }
 
-  // Fungsi untuk mengubah riwayat pendidikan menjadi list
+  // Fungsi untuk memisah riwayat pendidikan antar kampus menggunakan tanda |
   const listPendidikan = profil.riwayat_pendidikan ? profil.riwayat_pendidikan.split('|').map(item => item.trim()) : [];
 
   return (
@@ -71,7 +71,6 @@ export default function About() {
         {/* BAGIAN FOTO PROFIL */}
         <div className="about-visual">
           <div className="about-image-frame">
-            {/* MENGGUNAKAN LOGIKA: Jika foto di database kosong, gunakan foto lokal dari assets */}
             <img 
               src={profil.foto_profil || fotoProfilLokal} 
               alt={profil.nama_lengkap} 
@@ -100,12 +99,33 @@ export default function About() {
 
           <section className="card">
             <h2 className="section-title">Riwayat Pendidikan</h2>
-            <ul style={{ listStyleType: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              {listPendidikan.map((edu, index) => (
-                <li key={index} style={{ background: '#F8FAFC', padding: '15px', borderRadius: '8px', border: '1px solid var(--card-border)', fontSize: '1rem', color: 'var(--text-main)' }}>
-                  🎓 {edu}
-                </li>
-              ))}
+            <ul style={{ listStyleType: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {listPendidikan.map((edu, index) => {
+                
+                // MENGUBAH TEKS MENJADI 3 BARIS BERDASARKAN "ENTER"
+                const lines = edu.split(/\r?\n/).filter(line => line.trim() !== '');
+
+                return (
+                  <li key={index} style={{ background: '#F8FAFC', padding: '20px', borderRadius: '12px', border: '1px solid var(--card-border)', display: 'flex', gap: '15px', alignItems: 'flex-start' }}>
+                    <span style={{ fontSize: '1.8rem', lineHeight: '1' }}>🎓</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      {/* Baris 1: Tahun (Cetak Tebal) */}
+                      {lines[0] && <span style={{ fontWeight: '700', color: 'var(--text-heading)', fontSize: '1.05rem' }}>{lines[0]}</span>}
+                      
+                      {/* Baris 2: Prodi (Warna Aksen Biru) */}
+                      {lines[1] && <span style={{ fontWeight: '600', color: 'var(--accent-color)', fontSize: '1rem' }}>{lines[1]}</span>}
+                      
+                      {/* Baris 3: Kampus (Warna Abu-abu Lembut) */}
+                      {lines[2] && <span style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>{lines[2]}</span>}
+                      
+                      {/* Jaga-jaga jika Anda mengetik lebih dari 3 baris */}
+                      {lines.slice(3).map((line, i) => (
+                        <span key={i} style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>{line}</span>
+                      ))}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           </section>
         </div>
