@@ -14,6 +14,10 @@ export default function Admin() {
   const [artefakList, setArtefakList] = useState<any[]>([]);
   const [profil, setProfil] = useState<Profil | null>(null);
 
+  // --- STATE KHUSUS FOTO SLIDESHOW ---
+  const [slideshowFiles, setSlideshowFiles] = useState<any[]>([]);
+  const [isUploadingSlideshow, setIsUploadingSlideshow] = useState(false);
+
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const showToast = (message: string, type: 'success' | 'error') => { setToast({ message, type }); setTimeout(() => setToast(null), 3000); };
 
@@ -42,8 +46,15 @@ export default function Admin() {
   };
 
   const fetchData = async () => {
+    // Ambil Data Profil
     const { data: pData } = await supabase.from('profil').select('*').eq('id', 1).single();
     if (pData) setProfil(pData as Profil);
+
+    // Ambil Data File Slideshow
+    const { data: files } = await supabase.storage.from('portfolio-files').list('slideshow_profil');
+    if (files) {
+      setSlideshowFiles(files.filter(f => f.name !== '.emptyFolderPlaceholder'));
+    }
 
     const { data: mkData } = await supabase.from('mata_kuliah').select('*').order('id', { ascending: true });
     if (mkData) setMataKuliahList(mkData);
@@ -57,6 +68,7 @@ export default function Admin() {
 
   useEffect(() => { if (isAuth) fetchData(); }, [isAuth]);
 
+  // --- FUNGSI MENGELOLA PROFIL ---
   const handleUpdateProfil = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profil) return;
@@ -66,6 +78,39 @@ export default function Admin() {
     if (error) showToast('Gagal merubah biodata: ' + error.message, 'error'); else showToast('Biodata berhasil diperbarui!', 'success');
   };
 
+  // --- FUNGSI MENGELOLA FOTO SLIDESHOW ---
+  const handleUploadSlideshow = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    const fileExt = file.name.split('.').pop();
+    const fileName = `slideshow_profil/${Date.now()}.${fileExt}`;
+    
+    setIsUploadingSlideshow(true);
+    const { error } = await supabase.storage.from('portfolio-files').upload(fileName, file);
+    setIsUploadingSlideshow(false);
+
+    if (error) {
+      showToast('Gagal mengunggah foto: ' + error.message, 'error');
+    } else {
+      showToast('Foto berhasil diunggah!', 'success');
+      fetchData(); // Segarkan daftar foto
+    }
+    e.target.value = ''; // Reset input file
+  };
+
+  const handleDeleteSlideshow = async (fileName: string) => {
+    if (window.confirm('Apakah Anda yakin ingin menghapus foto ini dari slideshow?')) {
+      const { error } = await supabase.storage.from('portfolio-files').remove([`slideshow_profil/${fileName}`]);
+      if (error) {
+        showToast('Gagal menghapus foto: ' + error.message, 'error');
+      } else {
+        showToast('Foto berhasil dihapus!', 'success');
+        fetchData();
+      }
+    }
+  };
+
+  // --- FUNGSI MENGELOLA MATA KULIAH ---
   const resetMatkulForm = () => { setEditingMkId(null); setMkNama(''); setMkDeskripsi(''); setMkRefleksi(''); };
   const handleSaveMK = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,6 +131,7 @@ export default function Admin() {
     }
   };
 
+  // --- FUNGSI MENGELOLA TOPIK ---
   const resetTopikForm = () => { setEditingTopikId(null); setTNama(''); setTUraian(''); setTRefleksi(''); };
   const handleSaveTopik = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,6 +153,7 @@ export default function Admin() {
     }
   };
 
+  // --- FUNGSI MENGELOLA ARTEFAK ---
   const resetArtefakForm = () => { setEditingArtefakId(null); setAJudul(''); setAJenis('Dokumen / PDF'); setALink(''); setAFile(null); setATopikId(''); };
   const handleSaveArtefak = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -182,7 +229,7 @@ export default function Admin() {
     <div className="admin-layout" style={{ display: 'flex', height: '100vh', width: '100vw', background: '#F8FAFC', overflow: 'hidden', fontFamily: 'Plus Jakarta Sans, sans-serif', position: 'relative' }}>
       <style>{`@keyframes slideUpFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }`}</style>
 
-      {/* SIDEBAR ADMIN (Ditambahkan className untuk CSS Mobile) */}
+      {/* SIDEBAR ADMIN */}
       <aside className="admin-sidebar" style={{ width: '260px', background: '#0F172A', color: '#FFFFFF', display: 'flex', flexDirection: 'column', flexShrink: 0, boxShadow: '4px 0 10px rgba(0,0,0,0.05)', height: '100vh' }}>
         <div style={{ padding: '25px 20px', borderBottom: '1px solid #1E293B' }}>
           <h2 style={{ margin: 0, fontSize: '1.25rem', color: '#38BDF8' }}>Panel Admin</h2>
@@ -190,7 +237,7 @@ export default function Admin() {
         </div>
 
         <nav style={{ flex: 1, padding: '20px 0', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-          {[ { id: 'profil', label: '✎ Kelola Profil Biodata' }, { id: 'manajemen', label: '📚 Manajemen Pembelajaran' } ].map(tab => {
+          {[ { id: 'profil', label: '✎ Kelola Profil & Foto' }, { id: 'manajemen', label: '📚 Manajemen Pembelajaran' } ].map(tab => {
             const isActive = activeTab === tab.id;
             return (
               <button key={tab.id} onClick={() => { setActiveTab(tab.id as any); setManagingMatkulId(null); resetMatkulForm(); }} style={{ textAlign: 'left', width: '100%', padding: '12px 20px', background: isActive ? '#3B82F6' : 'transparent', color: isActive ? '#FFFFFF' : '#CBD5E1', border: 'none', borderLeft: isActive ? '4px solid #38BDF8' : '4px solid transparent', cursor: 'pointer', fontWeight: isActive ? 'bold' : 'normal', fontSize: '0.95rem', transition: 'background 0.2s' }}>
@@ -206,12 +253,13 @@ export default function Admin() {
         </div>
       </aside>
 
-      {/* KONTEN UTAMA KANAN (Ditambahkan className untuk CSS Mobile) */}
+      {/* KONTEN UTAMA KANAN */}
       <main className="admin-main" style={{ flex: 1, height: '100vh', overflowY: 'auto', padding: '30px 40px', boxSizing: 'border-box' }}>
         <div className="admin-content-box" style={{ width: '100%', background: '#FFFFFF', borderRadius: '12px', padding: '35px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid #E2E8F0', minHeight: 'calc(100vh - 60px)', boxSizing: 'border-box' }}>
 
           {activeTab === 'profil' && (
             <div>
+              {/* BAGIAN 1: FORM BIODATA */}
               <h2 style={{ marginTop: 0, color: '#1E293B', borderBottom: '2px solid #E2E8F0', paddingBottom: '12px' }}>Kelola Biodata (Profil)</h2>
               {profil ? (
                 <form onSubmit={handleUpdateProfil} style={{ marginTop: '20px' }}>
@@ -236,6 +284,53 @@ export default function Admin() {
                   <button type="submit" className="btn-primary" style={{ marginTop: '10px' }}>Perbarui Biodata</button>
                 </form>
               ) : <p>Memuat profil...</p>}
+
+              {/* BAGIAN 2: KELOLA FOTO SLIDESHOW */}
+              <div style={{ marginTop: '50px' }}>
+                <h2 style={{ marginTop: 0, color: '#1E293B', borderBottom: '2px solid #E2E8F0', paddingBottom: '12px' }}>
+                  Kelola Foto Slideshow Profil
+                </h2>
+                <p style={{ fontSize: '0.9rem', color: '#64748B', marginBottom: '15px' }}>
+                  Unggah beberapa foto terbaik Anda di sini. Foto-foto ini akan otomatis diputar secara bergantian saat pengunjung mengarahkan kursor ke foto Anda di halaman Beranda.
+                </p>
+
+                <div style={{ background: '#F8FAFC', border: '1px dashed #CBD5E0', padding: '20px', borderRadius: '8px', marginBottom: '25px' }}>
+                  <label style={{ fontWeight: 'bold', fontSize: '0.9rem', display: 'block', marginBottom: '8px' }}>+ Unggah Foto Baru</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleUploadSlideshow}
+                    disabled={isUploadingSlideshow}
+                    style={{ ...inputStyle, marginBottom: '0' }}
+                  />
+                  {isUploadingSlideshow && <p style={{ fontSize: '0.85rem', color: '#3B82F6', marginTop: '10px', marginBottom: '0' }}>Sedang mengunggah foto...</p>}
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '20px' }}>
+                  {slideshowFiles.length === 0 ? (
+                    <p style={{ color: '#94A3B8', fontStyle: 'italic', gridColumn: '1 / -1' }}>Belum ada foto yang diunggah ke slideshow.</p>
+                  ) : (
+                    slideshowFiles.map(file => {
+                      const fileUrl = supabase.storage.from('portfolio-files').getPublicUrl(`slideshow_profil/${file.name}`).data.publicUrl;
+                      return (
+                        <div key={file.name} style={{ border: '1px solid #E2E8F0', borderRadius: '8px', overflow: 'hidden', background: '#FFFFFF', textAlign: 'center', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
+                          <img src={fileUrl} alt={file.name} style={{ width: '100%', height: '180px', objectFit: 'cover' }} />
+                          <button
+                            onClick={() => handleDeleteSlideshow(file.name)}
+                            style={{ width: '100%', padding: '10px', background: 'rgba(239, 68, 68, 0.1)', color: '#EF4444', border: 'none', borderTop: '1px solid #E2E8F0', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold', transition: 'background 0.2s' }}
+                            onMouseOver={(e) => e.currentTarget.style.background = '#EF4444'}
+                            onMouseOut={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
+                            onMouseEnter={(e) => e.currentTarget.style.color = '#FFF'}
+                            onMouseLeave={(e) => e.currentTarget.style.color = '#EF4444'}
+                          >
+                            Hapus Foto
+                          </button>
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
