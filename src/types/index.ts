@@ -13,9 +13,6 @@ export interface Profil {
   email: string;
   filosofi_mengajar: string;
   riwayat_pendidikan: string;
-  
-  // PENAMBAHAN WAJIB AGAR TIDAK ERROR SAAT BUILD:
-  // Tanda tanya (?) berarti opsional (berjaga-jaga jika foto di database kosong)
   foto_profil?: string; 
 }
 
