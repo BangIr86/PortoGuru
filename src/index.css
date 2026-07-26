@@ -10,10 +10,11 @@
 }
 
 /* ==========================================================
-   2. TEMA MODERN EDITORIAL (Light Theme & Split Screen)
+   2. TEMA MODERN EDITORIAL (Light/Dark/System)
    ========================================================== */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
 
+/* --- PALET TERANG (DEFAULT) --- */
 :root {
   --bg-main: #FDFBF7; 
   --card-bg: #FFFFFF; 
@@ -26,10 +27,28 @@
   --accent-glow: rgba(43, 108, 176, 0.15); 
 }
 
+/* --- PALET GELAP (DARK MODE) --- */
+[data-theme='dark'] {
+  --bg-main: #0F172A; /* Slate 900 */
+  --card-bg: #1E293B; /* Slate 800 */
+  --card-border: #334155; /* Slate 700 */
+  --text-main: #CBD5E1; /* Slate 300 */
+  --text-heading: #F8FAFC; /* Slate 50 */
+  --text-muted: #94A3B8; /* Slate 400 */
+  --accent-color: #38BDF8; /* Sky 400 */
+  --accent-hover: #0EA5E9; /* Sky 500 */
+  --accent-glow: rgba(56, 189, 248, 0.15);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+/* Tambahan transisi warna agar perubahan tema terlihat mulus */
+body, .navbar, .card, .nav-menu {
+  transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
 }
 
 body {
@@ -47,7 +66,7 @@ h1, h2, h3, h4 {
 
 /* --- Navigasi (Navbar) --- */
 .navbar {
-  background: rgba(253, 251, 247, 0.85);
+  background: var(--bg-main);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   padding: 8px 40px; 
@@ -76,7 +95,6 @@ h1, h2, h3, h4 {
   font-weight: 600;
 }
 
-/* Tombol Hamburger (Disembunyikan di PC) */
 .hamburger-btn {
   display: none;
   background: none;
@@ -94,7 +112,7 @@ h1, h2, h3, h4 {
 .btn-primary {
   display: inline-block;
   background-color: var(--accent-color);
-  color: #FFFFFF;
+  color: #FFFFFF !important; /* Paksa warna teks tombol selalu putih */
   padding: 14px 28px;
   border-radius: 8px;
   text-decoration: none;
@@ -110,7 +128,7 @@ h1, h2, h3, h4 {
 .btn-primary:hover {
   background-color: var(--accent-hover);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(43, 108, 176, 0.25);
+  box-shadow: 0 6px 16px var(--accent-glow);
 }
 
 .btn-outline {
@@ -130,7 +148,7 @@ h1, h2, h3, h4 {
 
 .btn-outline:hover {
   background-color: var(--text-main);
-  color: #FFFFFF;
+  color: var(--bg-main); /* Balik warna menyesuaikan tema */
 }
 
 /* --- Container Umum --- */
@@ -159,7 +177,6 @@ h1, h2, h3, h4 {
 /* =========================================
    GAYA DASHBOARD (SPLIT SCREEN)
    ========================================= */
-
 .hero-container {
   max-width: 1100px; 
   margin: 0 auto;
@@ -194,6 +211,7 @@ h1, h2, h3, h4 {
   font-size: clamp(1.8rem, 3.5vw, 3.2rem); 
   line-height: 1.2;
   margin-bottom: 10px;
+  white-space: nowrap; 
 }
 
 .hero-subtitle {
@@ -202,6 +220,7 @@ h1, h2, h3, h4 {
   color: var(--accent-color);
   font-weight: 500;
   margin-bottom: 25px;
+  white-space: nowrap; 
 }
 
 .hero-divider {
@@ -275,9 +294,10 @@ h1, h2, h3, h4 {
 }
 
 input, textarea, select {
-  background: #FFFFFF !important;
+  background: var(--card-bg) !important;
   color: var(--text-main) !important;
   border: 1px solid var(--card-border) !important;
+  transition: all 0.3s ease;
 }
 input:focus, textarea:focus, select:focus {
   outline: none;
@@ -290,9 +310,8 @@ input:focus, textarea:focus, select:focus {
    ========================================================== */
 @media (max-width: 900px) {
   
-  /* 1. Navbar Menjadi Hamburger Menu */
   .hamburger-btn {
-    display: block; /* Munculkan garis 3 di HP */
+    display: block; 
   }
 
   .navbar {
@@ -300,13 +319,13 @@ input:focus, textarea:focus, select:focus {
   }
 
   .nav-menu {
-    display: none !important; /* Menu disembunyikan default */
+    display: none !important; 
     flex-direction: column;
     position: absolute;
-    top: 55px; /* Berada tepat di bawah navbar */
+    top: 55px; 
     left: 0;
     width: 100%;
-    background: #FFFFFF; /* Latar solid agar menutupi konten bawahnya */
+    background: var(--bg-main); 
     padding: 20px 0 !important;
     gap: 15px !important;
     box-shadow: 0 10px 20px rgba(0,0,0,0.05);
@@ -314,10 +333,9 @@ input:focus, textarea:focus, select:focus {
   }
 
   .nav-menu.open {
-    display: flex !important; /* Menu muncul saat tombol hamburger diklik */
+    display: flex !important; 
   }
 
-  /* 2. Beranda / Hero Responsif */
   .hero-container {
     flex-direction: column;
     justify-content: center;
@@ -326,47 +344,23 @@ input:focus, textarea:focus, select:focus {
     gap: 40px;
     height: auto !important;
   }
+  
   .hero-content {
     display: flex;
     flex-direction: column;
     align-items: center;
     max-width: 100%; 
   }
+  
   .hero-visual {
     justify-content: center;
   }
+  
   .image-frame {
     max-width: 300px;
   }
+  
   .image-backdrop {
     top: 15px; left: 15px;
-  }
-
-  /* 3. Panel Admin Responsif */
-  .admin-layout {
-    flex-direction: column !important;
-    height: auto !important;
-    overflow: visible !important;
-  }
-  .admin-sidebar {
-    width: 100% !important;
-    height: auto !important;
-    position: relative !important;
-    flex-shrink: 0;
-  }
-  .admin-main {
-    height: auto !important;
-    padding: 20px 15px !important;
-    overflow: visible !important;
-  }
-  .admin-content-box {
-    padding: 20px 15px !important;
-  }
-  
-  table {
-    font-size: 0.8rem !important;
-  }
-  th, td {
-    padding: 8px !important;
   }
 }

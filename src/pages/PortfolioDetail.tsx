@@ -71,12 +71,7 @@ export default function PortfolioDetail() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
           
-          {/* PERUBAHAN AJAIB: gridTemplateColumns pakai auto-fit agar otomatis jadi 1 baris di HP, dan 3 baris di PC! */}
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
-            gap: '15px' 
-          }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
             {topikList.map((topik) => {
               const isActive = topik.id === activeTopikId;
               return (
@@ -98,7 +93,7 @@ export default function PortfolioDetail() {
                   <div style={{ marginBottom: '25px' }}><h4 style={{ marginBottom: '10px', fontSize: '1.05rem' }}>Uraian Topik:</h4><p style={{ lineHeight: '1.8', color: 'var(--text-muted)' }}>{currentTopik.uraian_topik}</p></div>
                 )}
                 {currentTopik.refleksi && (
-                  <div style={{ marginBottom: '35px', padding: '20px', background: '#F8FAFC', borderRadius: '8px', border: '1px solid var(--card-border)' }}><h4 style={{ marginTop: '0', marginBottom: '10px', fontSize: '1.05rem' }}>Refleksi Topik:</h4><p style={{ margin: 0, fontStyle: 'italic', color: 'var(--text-muted)', lineHeight: '1.7' }}>"{currentTopik.refleksi}"</p></div>
+                  <div style={{ marginBottom: '35px', padding: '20px', background: 'var(--bg-main)', borderRadius: '8px', border: '1px solid var(--card-border)' }}><h4 style={{ marginTop: '0', marginBottom: '10px', fontSize: '1.05rem' }}>Refleksi Topik:</h4><p style={{ margin: 0, fontStyle: 'italic', color: 'var(--text-muted)', lineHeight: '1.7' }}>"{currentTopik.refleksi}"</p></div>
                 )}
 
                 <h4 style={{ fontSize: '1.2rem', borderBottom: '1px solid var(--card-border)', paddingBottom: '10px', marginBottom: '25px' }}>Artefak Pembelajaran</h4>
@@ -111,15 +106,15 @@ export default function PortfolioDetail() {
                       <div key={artefak.id} style={{ border: '1px solid var(--card-border)', borderRadius: '12px', padding: '25px', background: 'var(--card-bg)', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px', marginBottom: '20px' }}>
                           <h5 style={{ margin: 0, fontSize: '1.2rem', lineHeight: '1.4' }}>{artefak.judul}</h5>
-                          <span style={{ fontSize: '0.8rem', fontWeight: '600', color: 'var(--accent-color)', background: 'var(--accent-glow)', padding: '6px 12px', borderRadius: '100px', whiteSpace: 'nowrap' }}>{artefak.jenis}</span>
+                          <span style={{ fontSize: '0.8rem', fontWeight: '600', color: 'var(--accent-color)', background: 'var(--bg-main)', padding: '6px 12px', borderRadius: '100px', whiteSpace: 'nowrap' }}>{artefak.jenis}</span>
                         </div>
                         <div style={{ marginTop: '15px' }}>
                           {artefak.jenis === 'Dokumen / PDF' ? (
-                            <div style={{ width: '100%', height: '70vh', border: '1px solid var(--card-border)', borderRadius: '8px', overflow: 'hidden', background: '#F1F5F9' }}>
+                            <div style={{ width: '100%', height: '70vh', border: '1px solid var(--card-border)', borderRadius: '8px', overflow: 'hidden', background: 'var(--bg-main)' }}>
                               <iframe src={artefak.link_url} title={artefak.judul} width="100%" height="100%" style={{ border: 'none' }} />
                             </div>
                           ) : artefak.jenis === 'Dokumentasi / Foto' ? (
-                            <div style={{ textAlign: 'center', background: '#F8FAFC', padding: '15px', borderRadius: '8px', border: '1px solid var(--card-border)' }}>
+                            <div style={{ textAlign: 'center', background: 'var(--bg-main)', padding: '15px', borderRadius: '8px', border: '1px solid var(--card-border)' }}>
                               <img src={artefak.link_url} alt={artefak.judul} style={{ maxWidth: '100%', maxHeight: '500px', objectFit: 'contain', borderRadius: '4px' }} />
                             </div>
                           ) : artefak.jenis === 'Dokumentasi / Video' ? (
