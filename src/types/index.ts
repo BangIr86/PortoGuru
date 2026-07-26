@@ -1,29 +1,7 @@
-export interface Artefak {
-  id: number;
-  judul: string;
-  jenis: string;
-  link_url: string;
-  topik_id: number;
-}
+// ==========================================
+// DEFINISI TIPE DATA (TYPESCRIPT BLUEPRINTS)
+// ==========================================
 
-export interface Topik {
-  id: number;
-  nama_topik: string;
-  uraian_topik: string;
-  refleksi: string;
-  mata_kuliah_id: number;
-  artefak: Artefak[]; 
-}
-
-export interface MataKuliah {
-  id: number;
-  nama_mata_kuliah: string;
-  deskripsi_singkat: string;
-  refleksi: string;
-  topik: Topik[]; 
-}
-
-// TAMBAHAN BARU: Tipe data Profil
 export interface Profil {
   id: number;
   nama_lengkap: string;
@@ -35,4 +13,37 @@ export interface Profil {
   email: string;
   filosofi_mengajar: string;
   riwayat_pendidikan: string;
+  
+  // PENAMBAHAN WAJIB AGAR TIDAK ERROR SAAT BUILD:
+  // Tanda tanya (?) berarti opsional (berjaga-jaga jika foto di database kosong)
+  foto_profil?: string; 
+}
+
+export interface MataKuliah {
+  id: number;
+  nama_mata_kuliah: string;
+  deskripsi_singkat: string;
+  refleksi: string;
+  created_at?: string;
+}
+
+export interface Topik {
+  id: number;
+  nama_topik: string;
+  uraian_topik: string;
+  refleksi: string;
+  mata_kuliah_id: number;
+  created_at?: string;
+}
+
+export interface Artefak {
+  id: number;
+  judul: string;
+  jenis: string;
+  link_url: string;
+  topik_id: number;
+  created_at?: string;
+  
+  // Untuk relasi saat menarik data (Join Tabel)
+  topik?: Topik; 
 }
