@@ -5,7 +5,8 @@ import About from './pages/About';
 import Portfolio from './pages/Portfolio';
 import PortfolioDetail from './pages/PortfolioDetail';
 import Admin from './pages/Admin';
-import Contact from './pages/Contact'; // <-- TAMBAHAN IMPORT KONTAK
+import Contact from './pages/Contact';
+import NotFound from './pages/NotFound'; // <-- TAMBAHAN IMPORT NOT FOUND
 import Footer from './components/Footer';
 
 import logoUm from './assets/logo-um.png'; 
@@ -84,8 +85,6 @@ function AppContent() {
               <Link to="/" onClick={closeMobileMenu} className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>Dashboard</Link>
               <Link to="/about" onClick={closeMobileMenu} className={`nav-link ${location.pathname === '/about' ? 'active' : ''}`}>Tentang Saya</Link>
               <Link to="/ppg-corner" onClick={closeMobileMenu} className={`nav-link ${location.pathname.startsWith('/ppg-corner') ? 'active' : ''}`}>PPG Corner</Link>
-              
-              {/* <-- TAMBAHAN LINK KONTAK --> */}
               <Link to="/contact" onClick={closeMobileMenu} className={`nav-link ${location.pathname === '/contact' ? 'active' : ''}`}>Kontak</Link>
             </div>
 
@@ -130,11 +129,11 @@ function AppContent() {
           <Route path="/about" element={<About />} />
           <Route path="/ppg-corner" element={<Portfolio />} />
           <Route path="/ppg-corner/:id" element={<PortfolioDetail />} />
-          
-          {/* <-- TAMBAHAN ROUTE KONTAK --> */}
           <Route path="/contact" element={<Contact />} />
-          
           <Route path="/admin" element={<Admin />} />
+          
+          {/* <-- RUTE 404 (PENANGKAP URL SALAH) DITARUH PALING BAWAH --> */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
 
