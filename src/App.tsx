@@ -15,7 +15,14 @@ type Theme = 'light' | 'dark' | 'system';
 
 function AppContent() {
   const location = useLocation();
+  const hostname = window.location.hostname;
+  
+  // Deteksi Subdomain dan Jalur Admin
+  const isAdminSubdomain = hostname.startsWith('admin.');
   const isAdminRoute = location.pathname.startsWith('/admin');
+  
+  // Tentukan apakah harus menyembunyikan Navbar & Footer
+  const showAdminOnly = isAdminSubdomain || isAdminRoute;
   
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
@@ -48,10 +55,27 @@ function AppContent() {
     }
   }, [theme]);
 
+  // ==========================================
+  // RENDER KHUSUS SUBDOMAIN ADMIN (admin.domain.com)
+  // ==========================================
+  if (isAdminSubdomain) {
+    return (
+      <div style={{ width: '100%', minHeight: '100vh' }}>
+        <Routes>
+          {/* Semua path di subdomain ini akan diarahkan ke komponen Admin */}
+          <Route path="/*" element={<Admin />} />
+        </Routes>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // RENDER UTAMA UNTUK DOMAIN PUBLIK / LOCALHOST
+  // ==========================================
   return (
     <div style={{ width: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       
-      {!isAdminRoute && (
+      {!showAdminOnly && (
         <nav className="navbar" style={{ justifyContent: 'space-between' }}>
           
           {/* BAGIAN KIRI: Logo UM */}
@@ -130,6 +154,8 @@ function AppContent() {
           <Route path="/ppg-corner" element={<Portfolio />} />
           <Route path="/ppg-corner/:id" element={<PortfolioDetail />} />
           <Route path="/contact" element={<Contact />} />
+          
+          {/* Rute /admin dipertahankan agar bisa dites di localhost:5173/admin */}
           <Route path="/admin" element={<Admin />} />
           
           {/* <-- RUTE 404 (PENANGKAP URL SALAH) DITARUH PALING BAWAH --> */}
@@ -138,7 +164,7 @@ function AppContent() {
       </div>
 
       {/* FOOTER (Otomatis disembunyikan jika di halaman Admin) */}
-      {!isAdminRoute && <Footer />}
+      {!showAdminOnly && <Footer />}
 
     </div>
   );
