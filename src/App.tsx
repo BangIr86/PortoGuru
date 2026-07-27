@@ -5,6 +5,8 @@ import About from './pages/About';
 import Portfolio from './pages/Portfolio';
 import PortfolioDetail from './pages/PortfolioDetail';
 import Admin from './pages/Admin';
+import Contact from './pages/Contact'; // <-- TAMBAHAN IMPORT KONTAK
+import Footer from './components/Footer';
 
 import logoUm from './assets/logo-um.png'; 
 
@@ -32,7 +34,6 @@ function AppContent() {
       const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       root.setAttribute('data-theme', systemPrefersDark ? 'dark' : 'light');
 
-      // Memantau perubahan tema sistem secara real-time
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
       const handleChange = (e: MediaQueryListEvent) => {
         if (theme === 'system') {
@@ -83,6 +84,9 @@ function AppContent() {
               <Link to="/" onClick={closeMobileMenu} className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>Dashboard</Link>
               <Link to="/about" onClick={closeMobileMenu} className={`nav-link ${location.pathname === '/about' ? 'active' : ''}`}>Tentang Saya</Link>
               <Link to="/ppg-corner" onClick={closeMobileMenu} className={`nav-link ${location.pathname.startsWith('/ppg-corner') ? 'active' : ''}`}>PPG Corner</Link>
+              
+              {/* <-- TAMBAHAN LINK KONTAK --> */}
+              <Link to="/contact" onClick={closeMobileMenu} className={`nav-link ${location.pathname === '/contact' ? 'active' : ''}`}>Kontak</Link>
             </div>
 
             {/* Tombol Pemilih Tema */}
@@ -119,15 +123,23 @@ function AppContent() {
         </nav>
       )}
 
+      {/* KONTEN UTAMA */}
       <div style={{ flex: 1 }}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/ppg-corner" element={<Portfolio />} />
           <Route path="/ppg-corner/:id" element={<PortfolioDetail />} />
+          
+          {/* <-- TAMBAHAN ROUTE KONTAK --> */}
+          <Route path="/contact" element={<Contact />} />
+          
           <Route path="/admin" element={<Admin />} />
         </Routes>
       </div>
+
+      {/* FOOTER (Otomatis disembunyikan jika di halaman Admin) */}
+      {!isAdminRoute && <Footer />}
 
     </div>
   );

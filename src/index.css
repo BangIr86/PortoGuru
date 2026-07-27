@@ -364,3 +364,26 @@ input:focus, textarea:focus, select:focus {
     top: 15px; left: 15px;
   }
 }
+
+/* --- Styling Tombol Logo Sosmed --- */
+.social-logo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: var(--bg-main);
+  color: var(--text-main);
+  border: 1px solid var(--card-border);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.social-logo-btn:hover {
+  background: var(--accent-color);
+  color: #FFFFFF !important;
+  border-color: var(--accent-color);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px var(--accent-glow);
+}
