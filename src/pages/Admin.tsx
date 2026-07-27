@@ -14,22 +14,29 @@ export default function Admin() {
   const [artefakList, setArtefakList] = useState<any[]>([]);
   const [profil, setProfil] = useState<Profil | null>(null);
 
-  // --- STATE KHUSUS FOTO SLIDESHOW ---
   const [slideshowFiles, setSlideshowFiles] = useState<any[]>([]);
   const [isUploadingSlideshow, setIsUploadingSlideshow] = useState(false);
 
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const showToast = (message: string, type: 'success' | 'error') => { setToast({ message, type }); setTimeout(() => setToast(null), 3000); };
 
+  // --- STATE MATA KULIAH (DENGAN 4C) ---
   const [editingMkId, setEditingMkId] = useState<number | null>(null);
   const [mkNama, setMkNama] = useState('');
   const [mkDeskripsi, setMkDeskripsi] = useState('');
-  const [mkRefleksi, setMkRefleksi] = useState('');
+  const [mkConn, setMkConn] = useState('');
+  const [mkChal, setMkChal] = useState('');
+  const [mkConc, setMkConc] = useState('');
+  const [mkChan, setMkChan] = useState('');
 
+  // --- STATE TOPIK (DENGAN 4C) ---
   const [editingTopikId, setEditingTopikId] = useState<number | null>(null);
   const [tNama, setTNama] = useState('');
   const [tUraian, setTUraian] = useState('');
-  const [tRefleksi, setTRefleksi] = useState('');
+  const [tConn, setTConn] = useState('');
+  const [tChal, setTChal] = useState('');
+  const [tConc, setTConc] = useState('');
+  const [tChan, setTChan] = useState('');
 
   const [editingArtefakId, setEditingArtefakId] = useState<number | null>(null);
   const [aTopikId, setATopikId] = useState('');
@@ -95,10 +102,14 @@ export default function Admin() {
     }
   };
 
-  const resetMatkulForm = () => { setEditingMkId(null); setMkNama(''); setMkDeskripsi(''); setMkRefleksi(''); };
+  // --- FUNGSI MATA KULIAH 4C ---
+  const resetMatkulForm = () => { setEditingMkId(null); setMkNama(''); setMkDeskripsi(''); setMkConn(''); setMkChal(''); setMkConc(''); setMkChan(''); };
   const handleSaveMK = async (e: React.FormEvent) => {
     e.preventDefault();
-    const dataMK = { nama_mata_kuliah: mkNama, deskripsi_singkat: mkDeskripsi, refleksi: mkRefleksi };
+    // Bungkus 4C menjadi JSON String
+    const mkRefleksi4C = JSON.stringify({ connection: mkConn, challenge: mkChal, concept: mkConc, change: mkChan });
+    const dataMK = { nama_mata_kuliah: mkNama, deskripsi_singkat: mkDeskripsi, refleksi: mkRefleksi4C };
+    
     if (editingMkId) {
       const { error } = await supabase.from('mata_kuliah').update(dataMK).eq('id', editingMkId);
       if (error) showToast('Gagal memperbarui: ' + error.message, 'error'); else { showToast('Mata Kuliah diperbarui!', 'success'); fetchData(); resetMatkulForm(); }
@@ -115,11 +126,15 @@ export default function Admin() {
     }
   };
 
-  const resetTopikForm = () => { setEditingTopikId(null); setTNama(''); setTUraian(''); setTRefleksi(''); };
+  // --- FUNGSI TOPIK 4C ---
+  const resetTopikForm = () => { setEditingTopikId(null); setTNama(''); setTUraian(''); setTConn(''); setTChal(''); setTConc(''); setTChan(''); };
   const handleSaveTopik = async (e: React.FormEvent) => {
     e.preventDefault();
     if(!managingMatkulId) return;
-    const dataTopik = { nama_topik: tNama, uraian_topik: tUraian, refleksi: tRefleksi, mata_kuliah_id: managingMatkulId };
+    
+    const tRefleksi4C = JSON.stringify({ connection: tConn, challenge: tChal, concept: tConc, change: tChan });
+    const dataTopik = { nama_topik: tNama, uraian_topik: tUraian, refleksi: tRefleksi4C, mata_kuliah_id: managingMatkulId };
+    
     if (editingTopikId) {
       const { error } = await supabase.from('topik').update(dataTopik).eq('id', editingTopikId);
       if (error) showToast('Gagal memperbarui: ' + error.message, 'error'); else { showToast('Topik diperbarui!', 'success'); fetchData(); resetTopikForm(); }
@@ -136,6 +151,7 @@ export default function Admin() {
     }
   };
 
+  // --- FUNGSI ARTEFAK ---
   const resetArtefakForm = () => { setEditingArtefakId(null); setAJudul(''); setAJenis('Dokumen / PDF'); setALink(''); setAFile(null); setATopikId(''); };
   const handleSaveArtefak = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -181,7 +197,6 @@ export default function Admin() {
   const activeTopikList = topikList.filter(t => t.mata_kuliah_id === managingMatkulId);
   const activeArtefakList = artefakList.filter(a => a.topik?.mata_kuliah_id === managingMatkulId);
 
-  // STYLE DINAMIS DENGAN VARIABEL CSS
   const inputStyle = { 
     width: '100%', 
     padding: '12px', 
@@ -215,13 +230,13 @@ export default function Admin() {
   return (
     <div className="admin-layout" style={{ display: 'flex', height: '100vh', width: '100%', background: 'var(--bg-color)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       
-      {/* INJEKSI CSS MEDIA QUERIES & THEME UTK ADMIN */}
       <style>{`
         @keyframes slideUpFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        
         .admin-sidebar { border-right: 1px solid var(--card-border); }
         .admin-nav button:hover { background: var(--bg-color) !important; opacity: 0.9; }
         .admin-nav button.active { background: var(--bg-color) !important; color: var(--accent-color) !important; border-left: 4px solid var(--accent-color) !important; }
+        
+        .four-c-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         
         @media (max-width: 768px) {
           .admin-layout { flex-direction: column !important; height: auto !important; min-height: 100vh; overflow-y: auto !important; }
@@ -235,7 +250,7 @@ export default function Admin() {
           .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
           table { min-width: 650px; }
           .mobile-stack { flex-direction: column !important; }
-          .mobile-stack select, .mobile-stack input { width: 100% !important; }
+          .four-c-grid { grid-template-columns: 1fr; gap: 0; }
         }
       `}</style>
 
@@ -247,7 +262,7 @@ export default function Admin() {
         </div>
 
         <nav className="admin-nav" style={{ flex: 1, padding: '20px 0', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-          {[ { id: 'profil', label: '✎ Kelola Profil' }, { id: 'manajemen', label: '📚 Manajemen MK' } ].map(tab => {
+          {[ { id: 'profil', label: '✎ Kelola Profil' }, { id: 'manajemen', label: '📚 Manajemen MK & 4C' } ].map(tab => {
             const isActive = activeTab === tab.id;
             return (
               <button 
@@ -301,8 +316,7 @@ export default function Admin() {
 
               <div style={{ marginTop: '50px' }}>
                 <h2 style={{ marginTop: 0, color: 'var(--text-heading)', borderBottom: '2px solid var(--card-border)', paddingBottom: '12px' }}>Kelola Foto Slideshow</h2>
-                <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '15px' }}>Unggah beberapa foto terbaik Anda di sini untuk ditampilkan di Beranda.</p>
-                <div style={{ background: 'var(--bg-color)', border: '1px dashed var(--card-border)', padding: '20px', borderRadius: '8px', marginBottom: '25px' }}>
+                <div style={{ background: 'var(--bg-color)', border: '1px dashed var(--card-border)', padding: '20px', borderRadius: '8px', marginBottom: '25px', marginTop: '20px' }}>
                   <label style={{ fontWeight: 'bold', fontSize: '0.9rem', display: 'block', marginBottom: '8px', color: 'var(--text-main)' }}>+ Unggah Foto Baru</label>
                   <input type="file" accept="image/*" onChange={handleUploadSlideshow} disabled={isUploadingSlideshow} style={{ ...inputStyle, marginBottom: '0' }} />
                   {isUploadingSlideshow && <p style={{ fontSize: '0.85rem', color: 'var(--accent-color)', marginTop: '10px', marginBottom: '0' }}>Sedang mengunggah foto...</p>}
@@ -335,11 +349,33 @@ export default function Admin() {
                     <h4 style={{ margin: '0 0 15px 0', color: 'var(--accent-color)' }}>{editingMkId ? '✎ Edit Mata Kuliah' : '+ Tambah Mata Kuliah Baru'}</h4>
                     <label style={{fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--text-main)'}}>Nama Mata Kuliah</label>
                     <input type="text" placeholder="Contoh: Pembelajaran Terpadu" value={mkNama} onChange={e => setMkNama(e.target.value)} required style={inputStyle} />
+                    
                     <label style={{fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--text-main)'}}>Deskripsi Singkat</label>
                     <textarea placeholder="Deskripsi mengenai mata kuliah ini..." value={mkDeskripsi} onChange={e => setMkDeskripsi(e.target.value)} rows={2} required style={inputStyle} />
-                    <label style={{fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--text-main)'}}>Refleksi Akhir Mata Kuliah</label>
-                    <textarea placeholder="Refleksi keseluruhan..." value={mkRefleksi} onChange={e => setMkRefleksi(e.target.value)} rows={2} required style={inputStyle} />
-                    <div className="mobile-stack" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    
+                    <hr style={{ border: 'none', borderTop: '1px dashed var(--card-border)', margin: '15px 0 20px 0' }} />
+                    <h5 style={{ marginTop: 0, marginBottom: '15px', color: 'var(--accent-color)', fontSize: '1rem' }}>Form Refleksi 4C Mata Kuliah</h5>
+                    
+                    <div className="four-c-grid">
+                      <div>
+                        <label style={{fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--text-main)'}}>1. Connection (Keterkaitan)</label>
+                        <textarea placeholder="Keterkaitan materi dengan peran Anda..." value={mkConn} onChange={e => setMkConn(e.target.value)} rows={3} required style={inputStyle} />
+                      </div>
+                      <div>
+                        <label style={{fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--text-main)'}}>2. Challenge (Tantangan)</label>
+                        <textarea placeholder="Ide/materi yang menantang pemikiran..." value={mkChal} onChange={e => setMkChal(e.target.value)} rows={3} required style={inputStyle} />
+                      </div>
+                      <div>
+                        <label style={{fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--text-main)'}}>3. Concept (Konsep)</label>
+                        <textarea placeholder="Konsep utama yang Anda pelajari..." value={mkConc} onChange={e => setMkConc(e.target.value)} rows={3} required style={inputStyle} />
+                      </div>
+                      <div>
+                        <label style={{fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--text-main)'}}>4. Change (Perubahan)</label>
+                        <textarea placeholder="Perubahan positif pada diri/praktik Anda..." value={mkChan} onChange={e => setMkChan(e.target.value)} rows={3} required style={inputStyle} />
+                      </div>
+                    </div>
+
+                    <div className="mobile-stack" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '10px' }}>
                       <button type="submit" className="btn-primary" style={{ flex: 1 }}>{editingMkId ? 'Simpan Perubahan' : 'Simpan Mata Kuliah'}</button>
                       {editingMkId && <button type="button" onClick={resetMatkulForm} style={{ padding: '10px 20px', background: 'transparent', border: '1px solid var(--card-border)', color: 'var(--text-main)', borderRadius: '6px', cursor: 'pointer', flex: 1 }}>Batal</button>}
                     </div>
@@ -362,7 +398,11 @@ export default function Admin() {
                               <td style={{ padding: '12px', border: '1px solid var(--card-border)', fontWeight: 'bold', color: 'var(--text-main)' }}>{mk.nama_mata_kuliah}</td>
                               <td style={{ padding: '12px', border: '1px solid var(--card-border)', textAlign: 'center', whiteSpace: 'nowrap' }}>
                                 <button onClick={() => { setManagingMatkulId(mk.id); resetTopikForm(); resetArtefakForm(); }} style={{ padding: '8px 16px', background: '#10B981', color: '#FFFFFF', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '8px', fontWeight: 'bold', marginBottom: '5px' }}>📂 Kelola Topik</button>
-                                <button onClick={() => { setEditingMkId(mk.id); setMkNama(mk.nama_mata_kuliah); setMkDeskripsi(mk.deskripsi_singkat); setMkRefleksi(mk.refleksi); }} style={{ padding: '8px 16px', background: 'var(--accent-color)', color: '#FFFFFF', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '8px', marginBottom: '5px' }}>Edit</button>
+                                <button onClick={() => { 
+                                  setEditingMkId(mk.id); setMkNama(mk.nama_mata_kuliah); setMkDeskripsi(mk.deskripsi_singkat);
+                                  try { const parsed = JSON.parse(mk.refleksi); setMkConn(parsed.connection||''); setMkChal(parsed.challenge||''); setMkConc(parsed.concept||''); setMkChan(parsed.change||''); } 
+                                  catch { setMkConn(mk.refleksi||''); setMkChal(''); setMkConc(''); setMkChan(''); } 
+                                }} style={{ padding: '8px 16px', background: 'var(--accent-color)', color: '#FFFFFF', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '8px', marginBottom: '5px' }}>Edit</button>
                                 <button onClick={() => handleDeleteMK(mk.id)} style={{ padding: '8px 16px', background: '#EF4444', color: '#FFFFFF', border: 'none', borderRadius: '4px', cursor: 'pointer', marginBottom: '5px' }}>Hapus</button>
                               </td>
                             </tr>
@@ -383,8 +423,30 @@ export default function Admin() {
                     <form onSubmit={handleSaveTopik}>
                       <h5 style={{ margin: '0 0 10px 0', color: 'var(--accent-color)' }}>{editingTopikId ? '✎ Edit Topik' : '+ Tambah Topik Baru'}</h5>
                       <input type="text" placeholder="Nama Topik" value={tNama} onChange={e => setTNama(e.target.value)} required style={inputStyle} />
-                      <textarea placeholder="Uraian Topik..." value={tUraian} onChange={e => setTUraian(e.target.value)} rows={2} required style={inputStyle} />
-                      <textarea placeholder="Refleksi Topik..." value={tRefleksi} onChange={e => setTRefleksi(e.target.value)} rows={2} required style={inputStyle} />
+                      <textarea placeholder="Uraian Singkat Topik..." value={tUraian} onChange={e => setTUraian(e.target.value)} rows={2} required style={inputStyle} />
+                      
+                      <hr style={{ border: 'none', borderTop: '1px dashed var(--card-border)', margin: '15px 0 20px 0' }} />
+                      <h5 style={{ marginTop: 0, marginBottom: '15px', color: 'var(--accent-color)', fontSize: '0.95rem' }}>Refleksi 4C (Topik)</h5>
+                      
+                      <div className="four-c-grid">
+                        <div>
+                          <label style={{fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--text-main)'}}>Connection</label>
+                          <textarea value={tConn} onChange={e => setTConn(e.target.value)} rows={2} required style={inputStyle} />
+                        </div>
+                        <div>
+                          <label style={{fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--text-main)'}}>Challenge</label>
+                          <textarea value={tChal} onChange={e => setTChal(e.target.value)} rows={2} required style={inputStyle} />
+                        </div>
+                        <div>
+                          <label style={{fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--text-main)'}}>Concept</label>
+                          <textarea value={tConc} onChange={e => setTConc(e.target.value)} rows={2} required style={inputStyle} />
+                        </div>
+                        <div>
+                          <label style={{fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--text-main)'}}>Change</label>
+                          <textarea value={tChan} onChange={e => setTChan(e.target.value)} rows={2} required style={inputStyle} />
+                        </div>
+                      </div>
+
                       <div className="mobile-stack" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                         <button type="submit" className="btn-primary" style={{ padding: '8px 16px', flex: 1 }}>{editingTopikId ? 'Simpan Perubahan Topik' : 'Simpan Topik'}</button>
                         {editingTopikId && <button type="button" onClick={resetTopikForm} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--card-border)', color: 'var(--text-main)', borderRadius: '6px', cursor: 'pointer', flex: 1 }}>Batal</button>}
@@ -407,7 +469,11 @@ export default function Admin() {
                               <tr key={t.id}>
                                 <td style={{ padding: '10px', border: '1px solid var(--card-border)', color: 'var(--text-main)' }}>{t.nama_topik}</td>
                                 <td style={{ padding: '10px', border: '1px solid var(--card-border)', textAlign: 'center', whiteSpace: 'nowrap' }}>
-                                  <button onClick={() => { setEditingTopikId(t.id); setTNama(t.nama_topik); setTUraian(t.uraian_topik); setTRefleksi(t.refleksi); }} style={{ padding: '4px 8px', background: 'var(--accent-color)', color: '#FFFFFF', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '5px' }}>Edit</button>
+                                  <button onClick={() => { 
+                                    setEditingTopikId(t.id); setTNama(t.nama_topik); setTUraian(t.uraian_topik);
+                                    try { const parsed = JSON.parse(t.refleksi); setTConn(parsed.connection||''); setTChal(parsed.challenge||''); setTConc(parsed.concept||''); setTChan(parsed.change||''); } 
+                                    catch { setTConn(t.refleksi||''); setTChal(''); setTConc(''); setTChan(''); }
+                                  }} style={{ padding: '4px 8px', background: 'var(--accent-color)', color: '#FFFFFF', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '5px' }}>Edit</button>
                                   <button onClick={() => handleDeleteTopik(t.id)} style={{ padding: '4px 8px', background: '#EF4444', color: '#FFFFFF', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Hapus</button>
                                 </td>
                               </tr>
@@ -493,7 +559,7 @@ export default function Admin() {
         </div>
       </main>
 
-      {/* TOAST NOTIFIKASI (Tetap memakai warna cerah khusus notifikasi agar mencolok) */}
+      {/* TOAST NOTIFIKASI */}
       {toast && (
         <div style={{ position: 'fixed', bottom: '20px', right: '20px', left: window.innerWidth < 768 ? '20px' : 'auto', background: toast.type === 'success' ? '#10B981' : '#EF4444', color: '#FFFFFF', padding: '16px 20px', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', gap: '12px', zIndex: 9999, fontWeight: 'bold', fontSize: '0.9rem', animation: 'slideUpFade 0.3s ease-out forwards' }}>
           <span style={{ fontSize: '1.2rem' }}>{toast.type === 'success' ? '✅' : '⚠️'}</span> {toast.message}
@@ -502,4 +568,4 @@ export default function Admin() {
 
     </div>
   );
-} 
+}

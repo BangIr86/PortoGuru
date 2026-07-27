@@ -3,137 +3,239 @@ import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 
 export default function PortfolioDetail() {
-  const { id } = useParams(); 
-  const [mataKuliah, setMataKuliah] = useState<any>(null);
-  const [topikList, setTopikList] = useState<any[]>([]);
-  const [artefakList, setArtefakList] = useState<any[]>([]);
-  
-  const [activeTopikId, setActiveTopikId] = useState<number | null>(null);
+  const { id } = useParams();
+  const [matkul, setMatkul] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchDetail = async () => {
-      setLoading(true);
-      const { data: mkData, error: mkError } = await supabase.from('mata_kuliah').select('*').eq('id', id).single();
-      if (mkError) console.error('Gagal memuat mata kuliah:', mkError.message);
-      else setMataKuliah(mkData);
-
-      const { data: tData } = await supabase.from('topik').select('*').eq('mata_kuliah_id', id).order('id', { ascending: true });
-      if (tData) {
-        setTopikList(tData);
-        if (tData.length > 0) setActiveTopikId(tData[0].id);
-      }
-
-      const { data: aData } = await supabase.from('artefak').select('*, topik!inner(mata_kuliah_id)').eq('topik.mata_kuliah_id', id);
-      if (aData) setArtefakList(aData);
-      setLoading(false);
-    };
-    if (id) fetchDetail();
+    window.scrollTo(0, 0);
+    fetchDetailData();
   }, [id]);
 
-  if (loading) return <div className="container" style={{ textAlign: 'center', marginTop: '50px' }}>Memuat data pembelajaran...</div>;
-  if (!mataKuliah) return <div className="container" style={{ textAlign: 'center', marginTop: '50px' }}>Mata kuliah tidak ditemukan.</div>;
-
-  const activeArtefakList = artefakList.filter(a => a.topik_id === activeTopikId);
-
-  const getEmbedYouTubeUrl = (url: string) => {
+  const fetchDetailData = async () => {
     try {
-      if (!url) return '';
-      let videoId = '';
-      if (url.includes('youtu.be/')) videoId = url.split('youtu.be/')[1]?.split('?')[0];
-      else if (url.includes('watch?v=')) videoId = url.split('watch?v=')[1]?.split('&')[0];
-      return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
-    } catch { return url; }
+      setLoading(true);
+      // 1. Ambil data Mata Kuliah
+      const { data: mkData, error: mkError } = await supabase
+        .from('mata_kuliah')
+        .select('*')
+        .eq('id', id)
+        .single();
+        
+      if (mkError) throw mkError;
+
+      // 2. Ambil data Topik terkait
+      const { data: topikData } = await supabase
+        .from('topik')
+        .select('*')
+        .eq('mata_kuliah_id', id)
+        .order('id', { ascending: true });
+
+      // 3. Ambil data Artefak untuk topik-topik tersebut
+      let artefakData: any[] = [];
+      const topikIds = topikData?.map(t => t.id) || [];
+      
+      if (topikIds.length > 0) {
+        const { data: aData } = await supabase
+          .from('artefak')
+          .select('*')
+          .in('topik_id', topikIds);
+        if (aData) artefakData = aData;
+      }
+
+      // Gabungkan data
+      const combinedTopics = topikData?.map(t => ({
+        ...t,
+        artefak: artefakData.filter(a => a.topik_id === t.id)
+      })) || [];
+
+      setMatkul({ ...mkData, topik: combinedTopics });
+    } catch (error) {
+      console.error('Error fetching detail:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  return (
-    <div className="container">
-      <Link to="/ppg-corner" style={{ textDecoration: 'none', color: 'var(--text-muted)', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '30px', fontSize: '0.95rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'var(--accent-color)'} onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-muted)'}>
-        ← Kembali ke PPG Corner
-      </Link>
+  // MESIN PEMBACA 4C (JSON PARSER)
+  const renderRefleksi = (refleksiText: string) => {
+    if (!refleksiText) return <p style={{ color: 'var(--text-muted)' }}>Belum ada refleksi yang ditulis.</p>;
 
-      <div style={{ marginBottom: '40px' }}>
-        <h1 style={{ fontSize: 'clamp(2rem, 3vw, 2.8rem)', marginBottom: '15px' }}>{mataKuliah.nama_mata_kuliah}</h1>
-        <p style={{ fontSize: '1.1rem', color: 'var(--text-muted)', lineHeight: '1.8', maxWidth: '800px' }}>{mataKuliah.deskripsi_singkat}</p>
+    try {
+      // Coba ubah teks menjadi objek JSON
+      const parsed = JSON.parse(refleksiText);
+      
+      // Jika berhasil dan memiliki properti 4C, tampilkan Grid 4C
+      if (parsed && typeof parsed === 'object' && ('connection' in parsed || 'challenge' in parsed)) {
+        return (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '15px', marginTop: '15px' }}>
+            
+            {/* 1. Connection */}
+            <div style={{ background: 'var(--bg-color)', padding: '15px', borderRadius: '8px', border: '1px solid var(--card-border)' }}>
+              <h5 style={{ margin: '0 0 10px 0', color: 'var(--accent-color)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem' }}>
+                🔗 Connection
+              </h5>
+              <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+                {parsed.connection || '-'}
+              </p>
+            </div>
+
+            {/* 2. Challenge */}
+            <div style={{ background: 'var(--bg-color)', padding: '15px', borderRadius: '8px', border: '1px solid var(--card-border)' }}>
+              <h5 style={{ margin: '0 0 10px 0', color: '#EAB308', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem' }}>
+                🧗 Challenge
+              </h5>
+              <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+                {parsed.challenge || '-'}
+              </p>
+            </div>
+
+            {/* 3. Concept */}
+            <div style={{ background: 'var(--bg-color)', padding: '15px', borderRadius: '8px', border: '1px solid var(--card-border)' }}>
+              <h5 style={{ margin: '0 0 10px 0', color: '#10B981', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem' }}>
+                💡 Concept
+              </h5>
+              <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+                {parsed.concept || '-'}
+              </p>
+            </div>
+
+            {/* 4. Change */}
+            <div style={{ background: 'var(--bg-color)', padding: '15px', borderRadius: '8px', border: '1px solid var(--card-border)' }}>
+              <h5 style={{ margin: '0 0 10px 0', color: '#8B5CF6', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem' }}>
+                🚀 Change
+              </h5>
+              <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+                {parsed.change || '-'}
+              </p>
+            </div>
+
+          </div>
+        );
+      }
+    } catch (e) {
+      // JIKA BUKAN JSON (Data Lama / Teks Biasa), tampilkan sebagai paragraf standar
+      return <p style={{ color: 'var(--text-main)', lineHeight: '1.7', whiteSpace: 'pre-wrap', margin: 0 }}>{refleksiText}</p>;
+    }
+
+    return <p style={{ color: 'var(--text-main)', lineHeight: '1.7', whiteSpace: 'pre-wrap', margin: 0 }}>{refleksiText}</p>;
+  };
+
+  if (loading) {
+    return (
+      <div className="container" style={{ padding: '100px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+        <h2>Memuat detail mata kuliah...</h2>
+      </div>
+    );
+  }
+
+  if (!matkul) {
+    return (
+      <div className="container" style={{ padding: '100px 20px', textAlign: 'center' }}>
+        <h2 style={{ color: 'var(--text-heading)' }}>Mata Kuliah Tidak Ditemukan</h2>
+        <Link to="/ppg-corner" className="btn-primary" style={{ marginTop: '20px', display: 'inline-block' }}>Kembali ke PPG Corner</Link>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding: '40px 20px', minHeight: '100vh', background: 'var(--bg-color)' }}>
+      <div className="container" style={{ maxWidth: '900px' }}>
         
-        {mataKuliah.refleksi && (
-          <div style={{ marginTop: '30px', padding: '25px', background: 'var(--card-bg)', borderLeft: '4px solid var(--accent-color)', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
-            <h4 style={{ margin: '0 0 10px 0', fontSize: '1.1rem' }}>Refleksi Keseluruhan:</h4>
-            <p style={{ margin: 0, fontStyle: 'italic', lineHeight: '1.7', color: 'var(--text-main)' }}>"{mataKuliah.refleksi}"</p>
+        <Link to="/ppg-corner" style={{ display: 'inline-block', marginBottom: '20px', color: 'var(--accent-color)', textDecoration: 'none', fontWeight: 'bold' }}>
+          ← Kembali ke Daftar Mata Kuliah
+        </Link>
+
+        {/* HEADER MATA KULIAH */}
+        <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '30px', marginBottom: '40px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
+          <h1 style={{ marginTop: 0, color: 'var(--text-heading)', fontSize: '2rem', marginBottom: '15px' }}>
+            {matkul.nama_mata_kuliah}
+          </h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '1.05rem', lineHeight: '1.6', marginBottom: '30px' }}>
+            {matkul.deskripsi_singkat}
+          </p>
+          
+          <h3 style={{ color: 'var(--text-heading)', borderBottom: '2px solid var(--card-border)', paddingBottom: '10px', marginBottom: '15px' }}>
+            Refleksi Akhir Mata Kuliah
+          </h3>
+          {/* Render Refleksi (Otomatis mendeteksi 4C atau Teks Biasa) */}
+          {renderRefleksi(matkul.refleksi)}
+        </div>
+
+        {/* DAFTAR TOPIK & ARTEFAK */}
+        <h2 style={{ color: 'var(--text-heading)', marginBottom: '20px' }}>Jurnal Topik & Artefak</h2>
+        
+        {matkul.topik?.length === 0 ? (
+          <p style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Belum ada topik yang ditambahkan pada mata kuliah ini.</p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+            {matkul.topik.map((t: any, index: number) => (
+              <div key={t.id} style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', overflow: 'hidden' }}>
+                
+                {/* Header Topik */}
+                <div style={{ background: 'rgba(59, 130, 246, 0.05)', padding: '20px 25px', borderBottom: '1px solid var(--card-border)' }}>
+                  <h3 style={{ margin: 0, color: 'var(--accent-color)', fontSize: '1.3rem' }}>
+                    {index + 1}. {t.nama_topik}
+                  </h3>
+                  <p style={{ margin: '10px 0 0 0', color: 'var(--text-main)', fontSize: '0.95rem', lineHeight: '1.6' }}>
+                    {t.uraian_topik}
+                  </p>
+                </div>
+
+                {/* Body Topik (Refleksi & Artefak) */}
+                <div style={{ padding: '25px' }}>
+                  
+                  <h4 style={{ margin: '0 0 15px 0', color: 'var(--text-heading)' }}>Refleksi Pembelajaran (4C)</h4>
+                  {renderRefleksi(t.refleksi)}
+
+                  <h4 style={{ margin: '30px 0 15px 0', color: 'var(--text-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    🗂️ Artefak Pembelajaran
+                  </h4>
+                  
+                  {t.artefak?.length === 0 ? (
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>Belum ada artefak yang dilampirkan.</p>
+                  ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '15px' }}>
+                      {t.artefak.map((a: any) => (
+                        <a 
+                          key={a.id} 
+                          href={a.link_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            padding: '15px', 
+                            background: 'var(--bg-color)', 
+                            border: '1px solid var(--card-border)', 
+                            borderRadius: '8px',
+                            textDecoration: 'none',
+                            transition: 'transform 0.2s, border-color 0.2s'
+                          }}
+                          onMouseOver={(e) => e.currentTarget.style.borderColor = 'var(--accent-color)'}
+                          onMouseOut={(e) => e.currentTarget.style.borderColor = 'var(--card-border)'}
+                        >
+                          <span style={{ fontSize: '1.8rem', marginBottom: '10px' }}>
+                            {a.jenis.includes('Video') ? '🎥' : a.jenis.includes('Foto') ? '📸' : '📄'}
+                          </span>
+                          <span style={{ fontWeight: 'bold', color: 'var(--text-heading)', fontSize: '0.95rem', marginBottom: '5px' }}>
+                            {a.judul}
+                          </span>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                            Klik untuk melihat {a.jenis.includes('Video') ? 'video' : 'dokumen'}
+                          </span>
+                        </a>
+                      ))}
+                    </div>
+                  )}
+
+                </div>
+              </div>
+            ))}
           </div>
         )}
+
       </div>
-
-      <h2 style={{ borderBottom: '1px solid var(--card-border)', paddingBottom: '15px', marginBottom: '25px' }}>Topik Pembelajaran</h2>
-
-      {topikList.length === 0 ? (
-        <div className="card" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Belum ada topik pembelajaran yang ditambahkan.</div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
-            {topikList.map((topik) => {
-              const isActive = topik.id === activeTopikId;
-              return (
-                <button key={topik.id} onClick={() => setActiveTopikId(topik.id)} style={{ padding: '16px 20px', borderRadius: '8px', border: isActive ? '2px solid var(--accent-color)' : '1px solid var(--card-border)', background: isActive ? 'var(--accent-color)' : 'var(--card-bg)', color: isActive ? '#FFFFFF' : 'var(--text-main)', fontWeight: '600', fontSize: '0.95rem', cursor: 'pointer', transition: 'all 0.2s ease', textAlign: 'left', boxShadow: isActive ? '0 4px 12px var(--accent-glow)' : '0 2px 4px rgba(0,0,0,0.01)', lineHeight: '1.5', display: 'flex', alignItems: 'center' }}>
-                  {topik.nama_topik}
-                </button>
-              );
-            })}
-          </div>
-
-          {activeTopikId && (() => {
-            const currentTopik = topikList.find(t => t.id === activeTopikId);
-            if (!currentTopik) return null;
-
-            return (
-              <div className="card" style={{ padding: '40px', borderTop: '4px solid var(--text-heading)' }}>
-                <h3 style={{ fontSize: '1.6rem', marginTop: 0, marginBottom: '20px' }}>{currentTopik.nama_topik}</h3>
-                {currentTopik.uraian_topik && (
-                  <div style={{ marginBottom: '25px' }}><h4 style={{ marginBottom: '10px', fontSize: '1.05rem' }}>Uraian Topik:</h4><p style={{ lineHeight: '1.8', color: 'var(--text-muted)' }}>{currentTopik.uraian_topik}</p></div>
-                )}
-                {currentTopik.refleksi && (
-                  <div style={{ marginBottom: '35px', padding: '20px', background: 'var(--bg-main)', borderRadius: '8px', border: '1px solid var(--card-border)' }}><h4 style={{ marginTop: '0', marginBottom: '10px', fontSize: '1.05rem' }}>Refleksi Topik:</h4><p style={{ margin: 0, fontStyle: 'italic', color: 'var(--text-muted)', lineHeight: '1.7' }}>"{currentTopik.refleksi}"</p></div>
-                )}
-
-                <h4 style={{ fontSize: '1.2rem', borderBottom: '1px solid var(--card-border)', paddingBottom: '10px', marginBottom: '25px' }}>Artefak Pembelajaran</h4>
-                
-                {activeArtefakList.length === 0 ? (
-                  <p style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Belum ada artefak yang diunggah untuk topik ini.</p>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-                    {activeArtefakList.map((artefak) => (
-                      <div key={artefak.id} style={{ border: '1px solid var(--card-border)', borderRadius: '12px', padding: '25px', background: 'var(--card-bg)', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px', marginBottom: '20px' }}>
-                          <h5 style={{ margin: 0, fontSize: '1.2rem', lineHeight: '1.4' }}>{artefak.judul}</h5>
-                          <span style={{ fontSize: '0.8rem', fontWeight: '600', color: 'var(--accent-color)', background: 'var(--bg-main)', padding: '6px 12px', borderRadius: '100px', whiteSpace: 'nowrap' }}>{artefak.jenis}</span>
-                        </div>
-                        <div style={{ marginTop: '15px' }}>
-                          {artefak.jenis === 'Dokumen / PDF' ? (
-                            <div style={{ width: '100%', height: '70vh', border: '1px solid var(--card-border)', borderRadius: '8px', overflow: 'hidden', background: 'var(--bg-main)' }}>
-                              <iframe src={artefak.link_url} title={artefak.judul} width="100%" height="100%" style={{ border: 'none' }} />
-                            </div>
-                          ) : artefak.jenis === 'Dokumentasi / Foto' ? (
-                            <div style={{ textAlign: 'center', background: 'var(--bg-main)', padding: '15px', borderRadius: '8px', border: '1px solid var(--card-border)' }}>
-                              <img src={artefak.link_url} alt={artefak.judul} style={{ maxWidth: '100%', maxHeight: '500px', objectFit: 'contain', borderRadius: '4px' }} />
-                            </div>
-                          ) : artefak.jenis === 'Dokumentasi / Video' ? (
-                            <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: '#000', borderRadius: '8px', overflow: 'hidden' }}>
-                              <iframe src={getEmbedYouTubeUrl(artefak.link_url)} title={artefak.judul} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
-                            </div>
-                          ) : (
-                            <a href={artefak.link_url} target="_blank" rel="noopener noreferrer" className="btn-outline" style={{ display: 'inline-block' }}>Buka Tautan Artefak →</a>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })()}
-        </div>
-      )}
     </div>
   );
 }
