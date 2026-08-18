@@ -65,47 +65,47 @@ export default function PortfolioDetail() {
       // Coba ubah teks menjadi objek JSON
       const parsed = JSON.parse(refleksiText);
       
-      // Jika berhasil dan memiliki properti 4C, tampilkan Grid 4C
+      // Jika berhasil dan memiliki properti 4C, tampilkan 4C (SEKARANG TERSUSUN KE BAWAH)
       if (parsed && typeof parsed === 'object' && ('connection' in parsed || 'challenge' in parsed)) {
         return (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '15px', marginTop: '15px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '15px' }}>
             
             {/* 1. Connection */}
-            <div style={{ background: 'var(--bg-color)', padding: '15px', borderRadius: '8px', border: '1px solid var(--card-border)' }}>
-              <h5 style={{ margin: '0 0 10px 0', color: 'var(--accent-color)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem' }}>
+            <div style={{ background: 'var(--bg-color)', padding: '20px', borderRadius: '8px', border: '1px solid var(--card-border)' }}>
+              <h5 style={{ margin: '0 0 10px 0', color: 'var(--accent-color)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.05rem' }}>
                 🔗 Connection
               </h5>
-              <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+              <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-main)', lineHeight: '1.7', whiteSpace: 'pre-wrap' }}>
                 {parsed.connection || '-'}
               </p>
             </div>
 
             {/* 2. Challenge */}
-            <div style={{ background: 'var(--bg-color)', padding: '15px', borderRadius: '8px', border: '1px solid var(--card-border)' }}>
-              <h5 style={{ margin: '0 0 10px 0', color: '#EAB308', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem' }}>
+            <div style={{ background: 'var(--bg-color)', padding: '20px', borderRadius: '8px', border: '1px solid var(--card-border)' }}>
+              <h5 style={{ margin: '0 0 10px 0', color: '#EAB308', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.05rem' }}>
                 🧗 Challenge
               </h5>
-              <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+              <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-main)', lineHeight: '1.7', whiteSpace: 'pre-wrap' }}>
                 {parsed.challenge || '-'}
               </p>
             </div>
 
             {/* 3. Concept */}
-            <div style={{ background: 'var(--bg-color)', padding: '15px', borderRadius: '8px', border: '1px solid var(--card-border)' }}>
-              <h5 style={{ margin: '0 0 10px 0', color: '#10B981', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem' }}>
+            <div style={{ background: 'var(--bg-color)', padding: '20px', borderRadius: '8px', border: '1px solid var(--card-border)' }}>
+              <h5 style={{ margin: '0 0 10px 0', color: '#10B981', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.05rem' }}>
                 💡 Concept
               </h5>
-              <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+              <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-main)', lineHeight: '1.7', whiteSpace: 'pre-wrap' }}>
                 {parsed.concept || '-'}
               </p>
             </div>
 
             {/* 4. Change */}
-            <div style={{ background: 'var(--bg-color)', padding: '15px', borderRadius: '8px', border: '1px solid var(--card-border)' }}>
-              <h5 style={{ margin: '0 0 10px 0', color: '#8B5CF6', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem' }}>
+            <div style={{ background: 'var(--bg-color)', padding: '20px', borderRadius: '8px', border: '1px solid var(--card-border)' }}>
+              <h5 style={{ margin: '0 0 10px 0', color: '#8B5CF6', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.05rem' }}>
                 🚀 Change
               </h5>
-              <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+              <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-main)', lineHeight: '1.7', whiteSpace: 'pre-wrap' }}>
                 {parsed.change || '-'}
               </p>
             </div>
