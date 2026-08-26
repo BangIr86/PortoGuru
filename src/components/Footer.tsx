@@ -28,7 +28,7 @@ export default function Footer() {
             marginBottom: '10px',
             fontFamily: 'Playfair Display, serif'
           }}>
-            M. Khoirul Ibad, S.Pd.
+            M. Khoirul Ibad, S.Kom.
           </h3>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: '1.6', maxWidth: '400px' }}>
             Portofolio Digital — Mendokumentasikan perjalanan, karya, dan refleksi pedagogik sebagai Mahasiswa PPG Calon Guru Tahun {currentYear} di Universitas Negeri Malang.
