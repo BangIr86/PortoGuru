@@ -71,7 +71,7 @@ export default function Footer() {
               <a href="https://linkedin.com/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-main)', textDecoration: 'none', fontSize: '0.95rem', transition: 'color 0.2s' }}>LinkedIn</a>
             </li>
             <li>
-              <a href="https://github.com/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-main)', textDecoration: 'none', fontSize: '0.95rem', transition: 'color 0.2s' }}>GitHub</a>
+              <a href="https://github.com/BangIr86" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-main)', textDecoration: 'none', fontSize: '0.95rem', transition: 'color 0.2s' }}>GitHub</a>
             </li>
             <li>
               <a href="https://instagram.com/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-main)', textDecoration: 'none', fontSize: '0.95rem', transition: 'color 0.2s' }}>Instagram</a>
