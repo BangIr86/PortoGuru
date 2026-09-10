@@ -9,7 +9,8 @@ export default function Portfolio() {
 
   useEffect(() => {
     const fetchMataKuliah = async () => {
-      const { data, error } = await supabase.from('mata_kuliah').select('*').order('id', { ascending: true });
+      // Menarik data berdasarkan kolom 'urutan', bukan 'id'
+      const { data, error } = await supabase.from('mata_kuliah').select('*').order('urutan', { ascending: true });
       if (error) {
         console.error('Error fetching mata kuliah:', error.message);
       } else {
@@ -42,17 +43,24 @@ export default function Portfolio() {
           Belum ada mata kuliah yang ditambahkan.
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
+        /* Menyesuaikan grid agar proporsional untuk kotak kecil */
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '20px' }}>
           {mataKuliahList.map((mk) => (
             <Link to={`/ppg-corner/${mk.id}`} key={mk.id} style={{ textDecoration: 'none', color: 'inherit' }}>
-              <div className="card" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                <h3 style={{ fontSize: '1.4rem', marginBottom: '10px', color: 'var(--text-heading)', lineHeight: '1.4' }}>{mk.nama_mata_kuliah}</h3>
-                <p style={{ color: 'var(--text-muted)', marginBottom: '20px', flex: 1, fontSize: '0.95rem' }}>{mk.deskripsi_singkat}</p>
+              
+              {/* Kotak dibuat fix height (140px) dan deskripsi dihilangkan */}
+              <div className="card" style={{ height: '140px', display: 'flex', flexDirection: 'column', padding: '20px' }}>
                 
-                <div style={{ marginTop: 'auto', borderTop: '1px solid var(--card-border)', paddingTop: '15px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--accent-color)' }}>Buka Mata Kuliah</span>
+                {/* Judul Mata Kuliah dibatasi maksimal 2 baris agar tidak merusak layout jika teksnya terlalu panjang */}
+                <h3 style={{ fontSize: '1.1rem', marginBottom: 'auto', color: 'var(--text-heading)', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                  {mk.nama_mata_kuliah}
+                </h3>
+                
+                <div style={{ borderTop: '1px solid var(--card-border)', paddingTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--accent-color)' }}>Buka Mata Kuliah</span>
                   <span style={{ color: 'var(--accent-color)', fontSize: '1.2rem' }}>→</span>
                 </div>
+                
               </div>
             </Link>
           ))}
