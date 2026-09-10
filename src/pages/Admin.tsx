@@ -29,14 +29,11 @@ export default function Admin() {
   const [mkConc, setMkConc] = useState('');
   const [mkChan, setMkChan] = useState('');
 
-  // --- STATE TOPIK (DENGAN 4C) ---
+  // --- STATE TOPIK (SEDERHANA) ---
   const [editingTopikId, setEditingTopikId] = useState<number | null>(null);
   const [tNama, setTNama] = useState('');
   const [tUraian, setTUraian] = useState('');
-  const [tConn, setTConn] = useState('');
-  const [tChal, setTChal] = useState('');
-  const [tConc, setTConc] = useState('');
-  const [tChan, setTChan] = useState('');
+  const [tRefleksi, setTRefleksi] = useState('');
 
   const [editingArtefakId, setEditingArtefakId] = useState<number | null>(null);
   const [aTopikId, setATopikId] = useState('');
@@ -106,7 +103,6 @@ export default function Admin() {
   const resetMatkulForm = () => { setEditingMkId(null); setMkNama(''); setMkDeskripsi(''); setMkConn(''); setMkChal(''); setMkConc(''); setMkChan(''); };
   const handleSaveMK = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Bungkus 4C menjadi JSON String
     const mkRefleksi4C = JSON.stringify({ connection: mkConn, challenge: mkChal, concept: mkConc, change: mkChan });
     const dataMK = { nama_mata_kuliah: mkNama, deskripsi_singkat: mkDeskripsi, refleksi: mkRefleksi4C };
     
@@ -126,14 +122,12 @@ export default function Admin() {
     }
   };
 
-  // --- FUNGSI TOPIK 4C ---
-  const resetTopikForm = () => { setEditingTopikId(null); setTNama(''); setTUraian(''); setTConn(''); setTChal(''); setTConc(''); setTChan(''); };
+  // --- FUNGSI TOPIK SEDERHANA ---
+  const resetTopikForm = () => { setEditingTopikId(null); setTNama(''); setTUraian(''); setTRefleksi(''); };
   const handleSaveTopik = async (e: React.FormEvent) => {
     e.preventDefault();
     if(!managingMatkulId) return;
-    
-    const tRefleksi4C = JSON.stringify({ connection: tConn, challenge: tChal, concept: tConc, change: tChan });
-    const dataTopik = { nama_topik: tNama, uraian_topik: tUraian, refleksi: tRefleksi4C, mata_kuliah_id: managingMatkulId };
+    const dataTopik = { nama_topik: tNama, uraian_topik: tUraian, refleksi: tRefleksi, mata_kuliah_id: managingMatkulId };
     
     if (editingTopikId) {
       const { error } = await supabase.from('topik').update(dataTopik).eq('id', editingTopikId);
@@ -197,17 +191,7 @@ export default function Admin() {
   const activeTopikList = topikList.filter(t => t.mata_kuliah_id === managingMatkulId);
   const activeArtefakList = artefakList.filter(a => a.topik?.mata_kuliah_id === managingMatkulId);
 
-  const inputStyle = { 
-    width: '100%', 
-    padding: '12px', 
-    marginBottom: '15px', 
-    borderRadius: '6px', 
-    border: '1px solid var(--card-border)', 
-    fontFamily: 'inherit', 
-    background: 'var(--bg-color)', 
-    color: 'var(--text-main)', 
-    boxSizing: 'border-box' as const 
-  };
+  const inputStyle = { width: '100%', padding: '12px', marginBottom: '15px', borderRadius: '6px', border: '1px solid var(--card-border)', fontFamily: 'inherit', background: 'var(--bg-color)', color: 'var(--text-main)', boxSizing: 'border-box' as const };
 
   if (!isAuth) {
     return (
@@ -229,15 +213,12 @@ export default function Admin() {
 
   return (
     <div className="admin-layout" style={{ display: 'flex', height: '100vh', width: '100%', background: 'var(--bg-color)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      
       <style>{`
         @keyframes slideUpFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .admin-sidebar { border-right: 1px solid var(--card-border); }
         .admin-nav button:hover { background: var(--bg-color) !important; opacity: 0.9; }
         .admin-nav button.active { background: var(--bg-color) !important; color: var(--accent-color) !important; border-left: 4px solid var(--accent-color) !important; }
-        
         .four-c-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        
         @media (max-width: 768px) {
           .admin-layout { flex-direction: column !important; height: auto !important; min-height: 100vh; overflow-y: auto !important; }
           .admin-sidebar { width: 100% !important; height: auto !important; flex-shrink: 0; border-right: none; border-bottom: 1px solid var(--card-border); }
@@ -262,12 +243,11 @@ export default function Admin() {
         </div>
 
         <nav className="admin-nav" style={{ flex: 1, padding: '20px 0', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-          {[ { id: 'profil', label: '✎ Kelola Profil' }, { id: 'manajemen', label: '📚 Manajemen MK & 4C' } ].map(tab => {
+          {[ { id: 'profil', label: '✎ Kelola Profil' }, { id: 'manajemen', label: '📚 Manajemen MK & Topik' } ].map(tab => {
             const isActive = activeTab === tab.id;
             return (
               <button 
-                key={tab.id} 
-                className={isActive ? 'active' : ''}
+                key={tab.id} className={isActive ? 'active' : ''}
                 onClick={() => { setActiveTab(tab.id as any); setManagingMatkulId(null); resetMatkulForm(); }} 
                 style={{ textAlign: 'left', width: '100%', padding: '12px 20px', background: 'transparent', color: 'var(--text-main)', border: 'none', borderLeft: '4px solid transparent', cursor: 'pointer', fontWeight: isActive ? 'bold' : 'normal', fontSize: '0.95rem', transition: 'all 0.2s' }}
               >
@@ -346,15 +326,14 @@ export default function Admin() {
                 <>
                   <h2 style={{ marginTop: 0, color: 'var(--text-heading)', borderBottom: '2px solid var(--card-border)', paddingBottom: '12px' }}>Daftar Mata Kuliah</h2>
                   <form onSubmit={handleSaveMK} style={{ marginTop: '20px', background: 'var(--bg-color)', padding: '20px', borderRadius: '8px', border: '1px solid var(--card-border)' }}>
-                    <h4 style={{ margin: '0 0 15px 0', color: 'var(--accent-color)' }}>{editingMkId ? '✎ Edit Mata Kuliah' : '+ Tambah Mata Kuliah Baru'}</h4>
+                    <h4 style={{ margin: '0 0 15px 0', color: 'var(--accent-color)' }}>{editingMkId ? '✎ Edit Mata Kuliah & Refleksi 4C' : '+ Tambah Mata Kuliah Baru'}</h4>
                     <label style={{fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--text-main)'}}>Nama Mata Kuliah</label>
-                    <input type="text" placeholder="Contoh: Pembelajaran Terpadu" value={mkNama} onChange={e => setMkNama(e.target.value)} required style={inputStyle} />
-                    
+                    <input type="text" placeholder="Contoh: PPL Mandiri" value={mkNama} onChange={e => setMkNama(e.target.value)} required style={inputStyle} />
                     <label style={{fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--text-main)'}}>Deskripsi Singkat</label>
-                    <textarea placeholder="Deskripsi mengenai mata kuliah ini..." value={mkDeskripsi} onChange={e => setMkDeskripsi(e.target.value)} rows={2} required style={inputStyle} />
+                    <textarea placeholder="Deskripsi keseluruhan..." value={mkDeskripsi} onChange={e => setMkDeskripsi(e.target.value)} rows={2} required style={inputStyle} />
                     
                     <hr style={{ border: 'none', borderTop: '1px dashed var(--card-border)', margin: '15px 0 20px 0' }} />
-                    <h5 style={{ marginTop: 0, marginBottom: '15px', color: 'var(--accent-color)', fontSize: '1rem' }}>Form Refleksi 4C Mata Kuliah</h5>
+                    <h5 style={{ marginTop: 0, marginBottom: '15px', color: 'var(--accent-color)', fontSize: '1rem' }}>Form Refleksi 4C (Mata Kuliah)</h5>
                     
                     <div className="four-c-grid">
                       <div>
@@ -363,7 +342,7 @@ export default function Admin() {
                       </div>
                       <div>
                         <label style={{fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--text-main)'}}>2. Challenge (Tantangan)</label>
-                        <textarea placeholder="Ide/materi yang menantang pemikiran..." value={mkChal} onChange={e => setMkChal(e.target.value)} rows={3} required style={inputStyle} />
+                        <textarea placeholder="Ide/materi yang menantang..." value={mkChal} onChange={e => setMkChal(e.target.value)} rows={3} required style={inputStyle} />
                       </div>
                       <div>
                         <label style={{fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--text-main)'}}>3. Concept (Konsep)</label>
@@ -371,7 +350,7 @@ export default function Admin() {
                       </div>
                       <div>
                         <label style={{fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--text-main)'}}>4. Change (Perubahan)</label>
-                        <textarea placeholder="Perubahan positif pada diri/praktik Anda..." value={mkChan} onChange={e => setMkChan(e.target.value)} rows={3} required style={inputStyle} />
+                        <textarea placeholder="Perubahan positif pada diri..." value={mkChan} onChange={e => setMkChan(e.target.value)} rows={3} required style={inputStyle} />
                       </div>
                     </div>
 
@@ -417,35 +396,14 @@ export default function Admin() {
                   <button onClick={() => setManagingMatkulId(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', fontWeight: 'bold', cursor: 'pointer', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '5px', padding: 0 }}>← Kembali</button>
                   <h2 style={{ marginTop: 0, color: 'var(--text-heading)', borderBottom: '2px solid var(--accent-color)', paddingBottom: '12px', fontSize: '1.5rem' }}>Mengelola: <span style={{ color: 'var(--accent-color)' }}>{activeMatkulData?.nama_mata_kuliah}</span></h2>
 
-                  {/* KELOLA TOPIK */}
+                  {/* KELOLA TOPIK (TANPA 4C) */}
                   <div style={{ marginTop: '30px', padding: '20px', border: '1px solid var(--card-border)', borderRadius: '10px', background: 'var(--bg-color)' }}>
                     <h3 style={{ marginTop: 0, color: 'var(--text-heading)', marginBottom: '20px' }}>1. Manajemen Topik</h3>
                     <form onSubmit={handleSaveTopik}>
                       <h5 style={{ margin: '0 0 10px 0', color: 'var(--accent-color)' }}>{editingTopikId ? '✎ Edit Topik' : '+ Tambah Topik Baru'}</h5>
-                      <input type="text" placeholder="Nama Topik" value={tNama} onChange={e => setTNama(e.target.value)} required style={inputStyle} />
+                      <input type="text" placeholder="Nama Topik (Cth: Analisis Media Pembelajaran)" value={tNama} onChange={e => setTNama(e.target.value)} required style={inputStyle} />
                       <textarea placeholder="Uraian Singkat Topik..." value={tUraian} onChange={e => setTUraian(e.target.value)} rows={2} required style={inputStyle} />
-                      
-                      <hr style={{ border: 'none', borderTop: '1px dashed var(--card-border)', margin: '15px 0 20px 0' }} />
-                      <h5 style={{ marginTop: 0, marginBottom: '15px', color: 'var(--accent-color)', fontSize: '0.95rem' }}>Refleksi 4C (Topik)</h5>
-                      
-                      <div className="four-c-grid">
-                        <div>
-                          <label style={{fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--text-main)'}}>Connection</label>
-                          <textarea value={tConn} onChange={e => setTConn(e.target.value)} rows={2} required style={inputStyle} />
-                        </div>
-                        <div>
-                          <label style={{fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--text-main)'}}>Challenge</label>
-                          <textarea value={tChal} onChange={e => setTChal(e.target.value)} rows={2} required style={inputStyle} />
-                        </div>
-                        <div>
-                          <label style={{fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--text-main)'}}>Concept</label>
-                          <textarea value={tConc} onChange={e => setTConc(e.target.value)} rows={2} required style={inputStyle} />
-                        </div>
-                        <div>
-                          <label style={{fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--text-main)'}}>Change</label>
-                          <textarea value={tChan} onChange={e => setTChan(e.target.value)} rows={2} required style={inputStyle} />
-                        </div>
-                      </div>
+                      <textarea placeholder="Catatan Opsional..." value={tRefleksi} onChange={e => setTRefleksi(e.target.value)} rows={2} style={inputStyle} />
 
                       <div className="mobile-stack" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                         <button type="submit" className="btn-primary" style={{ padding: '8px 16px', flex: 1 }}>{editingTopikId ? 'Simpan Perubahan Topik' : 'Simpan Topik'}</button>
@@ -470,9 +428,7 @@ export default function Admin() {
                                 <td style={{ padding: '10px', border: '1px solid var(--card-border)', color: 'var(--text-main)' }}>{t.nama_topik}</td>
                                 <td style={{ padding: '10px', border: '1px solid var(--card-border)', textAlign: 'center', whiteSpace: 'nowrap' }}>
                                   <button onClick={() => { 
-                                    setEditingTopikId(t.id); setTNama(t.nama_topik); setTUraian(t.uraian_topik);
-                                    try { const parsed = JSON.parse(t.refleksi); setTConn(parsed.connection||''); setTChal(parsed.challenge||''); setTConc(parsed.concept||''); setTChan(parsed.change||''); } 
-                                    catch { setTConn(t.refleksi||''); setTChal(''); setTConc(''); setTChan(''); }
+                                    setEditingTopikId(t.id); setTNama(t.nama_topik); setTUraian(t.uraian_topik); setTRefleksi(t.refleksi || '');
                                   }} style={{ padding: '4px 8px', background: 'var(--accent-color)', color: '#FFFFFF', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '5px' }}>Edit</button>
                                   <button onClick={() => handleDeleteTopik(t.id)} style={{ padding: '4px 8px', background: '#EF4444', color: '#FFFFFF', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Hapus</button>
                                 </td>
