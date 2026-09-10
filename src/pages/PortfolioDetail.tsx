@@ -6,7 +6,9 @@ export default function PortfolioDetail() {
   const { id } = useParams();
   const [matkul, setMatkul] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [expandedArtifacts, setExpandedArtifacts] = useState<Record<number, boolean>>({});
+  
+  // State untuk menyimpan artefak yang sedang dilihat
+  const [selectedArtefak, setSelectedArtefak] = useState<any | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -16,28 +18,16 @@ export default function PortfolioDetail() {
   const fetchDetailData = async () => {
     try {
       setLoading(true);
-      const { data: mkData, error: mkError } = await supabase
-        .from('mata_kuliah')
-        .select('*')
-        .eq('id', id)
-        .single();
-        
+      const { data: mkData, error: mkError } = await supabase.from('mata_kuliah').select('*').eq('id', id).single();
       if (mkError) throw mkError;
 
-      const { data: topikData } = await supabase
-        .from('topik')
-        .select('*')
-        .eq('mata_kuliah_id', id)
-        .order('id', { ascending: true });
+      const { data: topikData } = await supabase.from('topik').select('*').eq('mata_kuliah_id', id).order('id', { ascending: true });
 
       let artefakData: any[] = [];
       const topikIds = topikData?.map(t => t.id) || [];
       
       if (topikIds.length > 0) {
-        const { data: aData } = await supabase
-          .from('artefak')
-          .select('*')
-          .in('topik_id', topikIds);
+        const { data: aData } = await supabase.from('artefak').select('*').in('topik_id', topikIds);
         if (aData) artefakData = aData;
       }
 
@@ -47,6 +37,10 @@ export default function PortfolioDetail() {
       })) || [];
 
       setMatkul({ ...mkData, topik: combinedTopics });
+      
+      // Auto-pilih artefak pertama jika ada
+      if (artefakData.length > 0) setSelectedArtefak(artefakData[0]);
+
     } catch (error) {
       console.error('Error fetching detail:', error);
     } finally {
@@ -54,35 +48,27 @@ export default function PortfolioDetail() {
     }
   };
 
-  const toggleArtifact = (artifactId: number) => {
-    setExpandedArtifacts(prev => ({
-      ...prev,
-      [artifactId]: !prev[artifactId]
-    }));
-  };
-
   const renderRefleksi = (refleksiText: string) => {
-    if (!refleksiText) return <p style={{ color: 'var(--text-muted)' }}>Belum ada refleksi yang ditulis.</p>;
-
+    if (!refleksiText) return <p style={{ color: 'var(--text-muted)' }}>Belum ada refleksi.</p>;
     try {
       const parsed = JSON.parse(refleksiText);
-      if (parsed && typeof parsed === 'object' && ('connection' in parsed || 'challenge' in parsed)) {
+      if (parsed && typeof parsed === 'object' && ('connection' in parsed)) {
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '15px' }}>
             <div style={{ background: 'var(--bg-color)', padding: '20px', borderRadius: '8px', border: '1px solid var(--card-border)' }}>
-              <h5 style={{ margin: '0 0 10px 0', color: 'var(--accent-color)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.05rem' }}>🔗 Connection</h5>
+              <h5 style={{ margin: '0 0 10px 0', color: 'var(--accent-color)', fontSize: '1.05rem' }}>🔗 Connection</h5>
               <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-main)', lineHeight: '1.7', whiteSpace: 'pre-wrap' }}>{parsed.connection || '-'}</p>
             </div>
             <div style={{ background: 'var(--bg-color)', padding: '20px', borderRadius: '8px', border: '1px solid var(--card-border)' }}>
-              <h5 style={{ margin: '0 0 10px 0', color: '#EAB308', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.05rem' }}>🧗 Challenge</h5>
+              <h5 style={{ margin: '0 0 10px 0', color: '#EAB308', fontSize: '1.05rem' }}>🧗 Challenge</h5>
               <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-main)', lineHeight: '1.7', whiteSpace: 'pre-wrap' }}>{parsed.challenge || '-'}</p>
             </div>
             <div style={{ background: 'var(--bg-color)', padding: '20px', borderRadius: '8px', border: '1px solid var(--card-border)' }}>
-              <h5 style={{ margin: '0 0 10px 0', color: '#10B981', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.05rem' }}>💡 Concept</h5>
+              <h5 style={{ margin: '0 0 10px 0', color: '#10B981', fontSize: '1.05rem' }}>💡 Concept</h5>
               <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-main)', lineHeight: '1.7', whiteSpace: 'pre-wrap' }}>{parsed.concept || '-'}</p>
             </div>
             <div style={{ background: 'var(--bg-color)', padding: '20px', borderRadius: '8px', border: '1px solid var(--card-border)' }}>
-              <h5 style={{ margin: '0 0 10px 0', color: '#8B5CF6', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.05rem' }}>🚀 Change</h5>
+              <h5 style={{ margin: '0 0 10px 0', color: '#8B5CF6', fontSize: '1.05rem' }}>🚀 Change</h5>
               <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-main)', lineHeight: '1.7', whiteSpace: 'pre-wrap' }}>{parsed.change || '-'}</p>
             </div>
           </div>
@@ -95,141 +81,94 @@ export default function PortfolioDetail() {
   };
 
   const renderPreviewContent = (item: any) => {
-    if (!item) return null;
+    if (!item) return <div style={{ textAlign: 'center', color: 'var(--text-muted)', paddingTop: '100px' }}>Pilih artefak di sebelah kiri</div>;
+    
     if (item.jenis.includes('Video')) {
       const videoId = item.link_url.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/|.*embed\/))([^&?]*)/)?.[1];
       const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}` : item.link_url;
-      return <iframe src={embedUrl} width="100%" height="450px" style={{ border: 'none', borderRadius: '8px' }} allowFullScreen></iframe>;
+      return <iframe src={embedUrl} width="100%" height="100%" style={{ border: 'none', borderRadius: '8px' }} allowFullScreen></iframe>;
     }
     if (item.jenis.includes('Foto') || item.jenis.includes('Gambar')) {
-      return <img src={item.link_url} alt={item.judul} style={{ maxWidth: '100%', maxHeight: '600px', objectFit: 'contain', borderRadius: '8px' }} />;
+      return <img src={item.link_url} alt={item.judul} style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '8px' }} />;
     }
-    return <iframe src={`${item.link_url}#toolbar=0&view=FitH`} width="100%" height="600px" style={{ border: 'none', borderRadius: '8px', background: '#FFFFFF' }}></iframe>;
+    return <iframe src={`${item.link_url}#toolbar=0&view=FitH`} width="100%" height="100%" style={{ border: 'none', borderRadius: '8px', background: '#FFFFFF' }}></iframe>;
   };
 
-  if (loading) {
-    return (
-      <div className="container" style={{ padding: '100px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
-        <h2>Memuat detail mata kuliah...</h2>
-      </div>
-    );
-  }
+  // Mengumpulkan semua artefak dari semua topik untuk menu sebelah kiri
+  const allArtefak = matkul?.topik?.flatMap((t: any) => t.artefak) || [];
 
-  if (!matkul) {
-    return (
-      <div className="container" style={{ padding: '100px 20px', textAlign: 'center' }}>
-        <h2 style={{ color: 'var(--text-heading)' }}>Mata Kuliah Tidak Ditemukan</h2>
-        <Link to="/ppg-corner" className="btn-primary" style={{ marginTop: '20px', display: 'inline-block' }}>Kembali ke PPG Corner</Link>
-      </div>
-    );
-  }
+  if (loading) return <div className="container" style={{ textAlign: 'center', color: 'var(--text-muted)' }}><h2>Memuat...</h2></div>;
+  if (!matkul) return <div className="container" style={{ textAlign: 'center' }}><h2>Mata Kuliah Tidak Ditemukan</h2><Link to="/ppg-corner" className="btn-primary">Kembali</Link></div>;
 
   return (
-    <div style={{ padding: '40px 20px', minHeight: '100vh', background: 'var(--bg-color)', position: 'relative' }}>
-      <div className="container" style={{ maxWidth: '900px' }}>
+    <div style={{ padding: '40px 20px', minHeight: '100vh', background: 'var(--bg-color)' }}>
+      <div className="container" style={{ maxWidth: '1100px', padding: 0 }}>
         
         <Link to="/ppg-corner" style={{ display: 'inline-block', marginBottom: '20px', color: 'var(--accent-color)', textDecoration: 'none', fontWeight: 'bold' }}>
-          ← Kembali ke Daftar Mata Kuliah
+          ← Kembali ke PPG Corner
         </Link>
 
-        {/* HEADER MATA KULIAH */}
-        <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '30px', marginBottom: '40px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
-          <h1 style={{ marginTop: 0, color: 'var(--text-heading)', fontSize: '2rem', marginBottom: '15px' }}>
-            {matkul.nama_mata_kuliah}
-          </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '1.05rem', lineHeight: '1.6', marginBottom: '30px' }}>
-            {matkul.deskripsi_singkat}
-          </p>
-          
-          <h3 style={{ color: 'var(--text-heading)', borderBottom: '2px solid var(--card-border)', paddingBottom: '10px', marginBottom: '15px' }}>
-            Refleksi Akhir (4C)
-          </h3>
+        {/* HEADER & REFLEKSI MATA KULIAH */}
+        <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '30px', marginBottom: '40px' }}>
+          <h1 style={{ marginTop: 0, color: 'var(--text-heading)', fontSize: '2rem', marginBottom: '15px' }}>{matkul.nama_mata_kuliah}</h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '1.05rem', lineHeight: '1.6', marginBottom: '30px' }}>{matkul.deskripsi_singkat}</p>
+          <h3 style={{ color: 'var(--text-heading)', borderBottom: '2px solid var(--card-border)', paddingBottom: '10px', marginBottom: '15px' }}>Refleksi Akhir (4C)</h3>
           {renderRefleksi(matkul.refleksi)}
         </div>
 
-        {/* DAFTAR TOPIK & ARTEFAK */}
-        <h2 style={{ color: 'var(--text-heading)', marginBottom: '20px' }}>Jurnal Topik & Artefak</h2>
+        {/* SPLIT SCREEN ARTEFAK (Sesuai Gambar Request) */}
+        <h2 style={{ color: 'var(--text-heading)', marginBottom: '20px' }}>Koleksi Artefak Pembelajaran</h2>
         
-        {matkul.topik?.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Belum ada topik yang ditambahkan pada mata kuliah ini.</p>
+        {allArtefak.length === 0 ? (
+          <p style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Belum ada artefak di mata kuliah ini.</p>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-            {matkul.topik.map((t: any, index: number) => (
-              <div key={t.id} style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', overflow: 'hidden' }}>
-                
-                {/* Header Topik */}
-                <div style={{ background: 'rgba(59, 130, 246, 0.05)', padding: '20px 25px', borderBottom: '1px solid var(--card-border)' }}>
-                  <h3 style={{ margin: 0, color: 'var(--accent-color)', fontSize: '1.3rem' }}>
-                    {index + 1}. {t.nama_topik}
-                  </h3>
-                  <p style={{ margin: '10px 0 0 0', color: 'var(--text-main)', fontSize: '0.95rem', lineHeight: '1.6' }}>
-                    {t.uraian_topik}
-                  </p>
-                  {t.refleksi && (
-                    <p style={{ margin: '10px 0 0 0', color: 'var(--text-muted)', fontSize: '0.85rem', fontStyle: 'italic' }}>
-                      Catatan: {t.refleksi}
-                    </p>
-                  )}
-                </div>
+          <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+            
+            {/* KIRI: DAFTAR TOMBOL ARTEFAK */}
+            <div style={{ flex: '1 1 250px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {allArtefak.map((a: any) => {
+                const isActive = selectedArtefak?.id === a.id;
+                return (
+                  <button
+                    key={a.id}
+                    onClick={() => setSelectedArtefak(a)}
+                    style={{
+                      padding: '15px', textAlign: 'left', borderRadius: '8px', cursor: 'pointer',
+                      background: isActive ? 'var(--accent-glow)' : 'var(--card-bg)',
+                      border: `1px solid ${isActive ? 'var(--accent-color)' : 'var(--card-border)'}`,
+                      color: isActive ? 'var(--accent-color)' : 'var(--text-main)',
+                      fontWeight: isActive ? 'bold' : 'normal',
+                      transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '10px'
+                    }}
+                  >
+                    <span style={{ fontSize: '1.5rem' }}>{a.jenis.includes('Video') ? '🎥' : a.jenis.includes('Foto') ? '📸' : '📄'}</span>
+                    <span>{a.judul}</span>
+                  </button>
+                );
+              })}
+            </div>
 
-                {/* Body Topik (Hanya Artefak) */}
-                <div style={{ padding: '25px' }}>
-                  <h4 style={{ margin: '0 0 15px 0', color: 'var(--text-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    🗂️ Artefak Pembelajaran
-                  </h4>
-                  
-                  {t.artefak?.length === 0 ? (
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>Belum ada artefak yang dilampirkan.</p>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                      {t.artefak.map((a: any) => {
-                        const isExpanded = expandedArtifacts[a.id];
-                        return (
-                          <div key={a.id} style={{ border: '1px solid var(--card-border)', borderRadius: '8px', overflow: 'hidden', background: 'var(--bg-color)' }}>
-                            <div 
-                              onClick={() => toggleArtifact(a.id)}
-                              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 20px', cursor: 'pointer', transition: 'background 0.2s ease-in-out' }}
-                              onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(59, 130, 246, 0.05)'; }}
-                              onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; }}
-                            >
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                <span style={{ fontSize: '1.8rem' }}>
-                                  {a.jenis.includes('Video') ? '🎥' : a.jenis.includes('Foto') ? '📸' : '📄'}
-                                </span>
-                                <div>
-                                  <div style={{ fontWeight: 'bold', color: 'var(--text-heading)', fontSize: '1.05rem', marginBottom: '4px' }}>
-                                    {a.judul}
-                                  </div>
-                                  <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                                    {isExpanded ? 'Tutup dokumen' : `Klik untuk melihat ${a.jenis.includes('Video') ? 'video' : 'dokumen'} langsung`}
-                                  </div>
-                                </div>
-                              </div>
-                              <div style={{ fontSize: '1.2rem', color: 'var(--text-muted)', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }}>▼</div>
-                            </div>
-
-                            {isExpanded && (
-                              <div style={{ borderTop: '1px solid var(--card-border)', padding: '15px', background: '#0F172A', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                  <a href={a.link_url} target="_blank" rel="noopener noreferrer" style={{ padding: '6px 12px', background: 'var(--accent-color)', color: '#FFF', borderRadius: '4px', textDecoration: 'none', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                                    Buka di Tab Baru ↗
-                                  </a>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                                  {renderPreviewContent(a)}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
+            {/* KANAN: PREVIEW ARTEFAK */}
+            <div style={{ flex: '3 1 500px', height: '600px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column' }}>
+              {selectedArtefak && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', paddingBottom: '15px', borderBottom: '1px solid var(--card-border)' }}>
+                  <div>
+                    <h3 style={{ margin: 0, color: 'var(--text-heading)' }}>{selectedArtefak.judul}</h3>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{selectedArtefak.jenis}</span>
+                  </div>
+                  <a href={selectedArtefak.link_url} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ padding: '8px 15px', fontSize: '0.85rem' }}>
+                    Buka di Tab Baru ↗
+                  </a>
                 </div>
+              )}
+              <div style={{ flex: 1, background: '#F8FAFC', borderRadius: '8px', overflow: 'hidden' }}>
+                {renderPreviewContent(selectedArtefak)}
               </div>
-            ))}
+            </div>
+
           </div>
         )}
+
       </div>
     </div>
   );
