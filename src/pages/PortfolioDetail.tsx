@@ -6,8 +6,6 @@ export default function PortfolioDetail() {
   const { id } = useParams();
   const [matkul, setMatkul] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  
-  // STATE KHUSUS UNTUK MENYIMPAN STATUS ARTEFAK MANA YANG SEDANG DIBUKA
   const [expandedArtifacts, setExpandedArtifacts] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
@@ -56,7 +54,6 @@ export default function PortfolioDetail() {
     }
   };
 
-  // FUNGSI UNTUK MEMBUKA/MENUTUP PREVIEW ARTEFAK DI TEMPAT
   const toggleArtifact = (artifactId: number) => {
     setExpandedArtifacts(prev => ({
       ...prev,
@@ -64,7 +61,6 @@ export default function PortfolioDetail() {
     }));
   };
 
-  // MESIN PEMBACA 4C (JSON PARSER) VERTICAL
   const renderRefleksi = (refleksiText: string) => {
     if (!refleksiText) return <p style={{ color: 'var(--text-muted)' }}>Belum ada refleksi yang ditulis.</p>;
 
@@ -98,21 +94,16 @@ export default function PortfolioDetail() {
     return <p style={{ color: 'var(--text-main)', lineHeight: '1.7', whiteSpace: 'pre-wrap', margin: 0 }}>{refleksiText}</p>;
   };
 
-  // FUNGSI UNTUK MERENDER ISI PREVIEW BERDASARKAN JENIS FILE
   const renderPreviewContent = (item: any) => {
     if (!item) return null;
-
     if (item.jenis.includes('Video')) {
       const videoId = item.link_url.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/|.*embed\/))([^&?]*)/)?.[1];
       const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}` : item.link_url;
       return <iframe src={embedUrl} width="100%" height="450px" style={{ border: 'none', borderRadius: '8px' }} allowFullScreen></iframe>;
     }
-    
     if (item.jenis.includes('Foto') || item.jenis.includes('Gambar')) {
       return <img src={item.link_url} alt={item.judul} style={{ maxWidth: '100%', maxHeight: '600px', objectFit: 'contain', borderRadius: '8px' }} />;
     }
-
-    // Default untuk Dokumen / PDF 
     return <iframe src={`${item.link_url}#toolbar=0&view=FitH`} width="100%" height="600px" style={{ border: 'none', borderRadius: '8px', background: '#FFFFFF' }}></iframe>;
   };
 
@@ -151,7 +142,7 @@ export default function PortfolioDetail() {
           </p>
           
           <h3 style={{ color: 'var(--text-heading)', borderBottom: '2px solid var(--card-border)', paddingBottom: '10px', marginBottom: '15px' }}>
-            Refleksi Akhir Mata Kuliah
+            Refleksi Akhir (4C)
           </h3>
           {renderRefleksi(matkul.refleksi)}
         </div>
@@ -174,15 +165,16 @@ export default function PortfolioDetail() {
                   <p style={{ margin: '10px 0 0 0', color: 'var(--text-main)', fontSize: '0.95rem', lineHeight: '1.6' }}>
                     {t.uraian_topik}
                   </p>
+                  {t.refleksi && (
+                    <p style={{ margin: '10px 0 0 0', color: 'var(--text-muted)', fontSize: '0.85rem', fontStyle: 'italic' }}>
+                      Catatan: {t.refleksi}
+                    </p>
+                  )}
                 </div>
 
-                {/* Body Topik (Refleksi & Artefak) */}
+                {/* Body Topik (Hanya Artefak) */}
                 <div style={{ padding: '25px' }}>
-                  
-                  <h4 style={{ margin: '0 0 15px 0', color: 'var(--text-heading)' }}>Refleksi Pembelajaran (4C)</h4>
-                  {renderRefleksi(t.refleksi)}
-
-                  <h4 style={{ margin: '30px 0 15px 0', color: 'var(--text-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <h4 style={{ margin: '0 0 15px 0', color: 'var(--text-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     🗂️ Artefak Pembelajaran
                   </h4>
                   
@@ -192,21 +184,11 @@ export default function PortfolioDetail() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                       {t.artefak.map((a: any) => {
                         const isExpanded = expandedArtifacts[a.id];
-                        
                         return (
                           <div key={a.id} style={{ border: '1px solid var(--card-border)', borderRadius: '8px', overflow: 'hidden', background: 'var(--bg-color)' }}>
-                            
-                            {/* KEPALA KARTU (Bisa Diklik untuk Buka/Tutup) */}
                             <div 
                               onClick={() => toggleArtifact(a.id)}
-                              style={{ 
-                                display: 'flex', 
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                padding: '15px 20px', 
-                                cursor: 'pointer',
-                                transition: 'background 0.2s ease-in-out'
-                              }}
+                              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 20px', cursor: 'pointer', transition: 'background 0.2s ease-in-out' }}
                               onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(59, 130, 246, 0.05)'; }}
                               onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; }}
                             >
@@ -223,42 +205,31 @@ export default function PortfolioDetail() {
                                   </div>
                                 </div>
                               </div>
-                              <div style={{ fontSize: '1.2rem', color: 'var(--text-muted)', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }}>
-                                ▼
-                              </div>
+                              <div style={{ fontSize: '1.2rem', color: 'var(--text-muted)', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }}>▼</div>
                             </div>
 
-                            {/* ISI PREVIEW (Tampil Hanya Jika Diklik) */}
                             {isExpanded && (
                               <div style={{ borderTop: '1px solid var(--card-border)', padding: '15px', background: '#0F172A', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                
-                                {/* Tombol Eksternal */}
                                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                                   <a href={a.link_url} target="_blank" rel="noopener noreferrer" style={{ padding: '6px 12px', background: 'var(--accent-color)', color: '#FFF', borderRadius: '4px', textDecoration: 'none', fontSize: '0.8rem', fontWeight: 'bold' }}>
                                     Buka di Tab Baru ↗
                                   </a>
                                 </div>
-                                
-                                {/* Layar Render */}
                                 <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
                                   {renderPreviewContent(a)}
                                 </div>
-                                
                               </div>
                             )}
-
                           </div>
                         );
                       })}
                     </div>
                   )}
-
                 </div>
               </div>
             ))}
           </div>
         )}
-
       </div>
     </div>
   );
