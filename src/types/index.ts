@@ -1,7 +1,3 @@
-// ==========================================
-// DEFINISI TIPE DATA (TYPESCRIPT BLUEPRINTS)
-// ==========================================
-
 export interface Profil {
   id: number;
   nama_lengkap: string;
@@ -13,24 +9,24 @@ export interface Profil {
   email: string;
   filosofi_mengajar: string;
   riwayat_pendidikan: string;
-  foto_profil?: string; 
+  foto_profil?: string;   
 }
 
 export interface MataKuliah {
   id: number;
   nama_mata_kuliah: string;
   deskripsi_singkat: string;
-  refleksi: string;
-  created_at?: string;
+  refleksi?: string;
+  urutan: number; // PENAMBAHAN KOLOM URUTAN
 }
 
 export interface Topik {
   id: number;
   nama_topik: string;
   uraian_topik: string;
-  refleksi: string;
+  refleksi?: string;
   mata_kuliah_id: number;
-  created_at?: string;
+
 }
 
 export interface Artefak {
@@ -40,7 +36,5 @@ export interface Artefak {
   link_url: string;
   topik_id: number;
   created_at?: string;
-  
-  // Untuk relasi saat menarik data (Join Tabel)
-  topik?: Topik; 
+    topik?: Topik;
 }
