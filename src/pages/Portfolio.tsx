@@ -52,6 +52,12 @@ export default function Portfolio() {
                 {mk.nama_mata_kuliah}
               </h3>
               
+              {mk.semester && (
+                <div style={{ display: 'inline-block', background: 'var(--accent-glow)', color: 'var(--accent-color)', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', marginTop: '8px', alignSelf: 'flex-start' }}>
+                  Semester {mk.semester}
+                </div>
+              )}
+              
               <Link to={`/ppg-corner/${mk.id}`} style={{ textDecoration: 'none', marginTop: 'auto' }}>
                 <div style={{ padding: '10px', background: 'var(--accent-color)', color: '#FFFFFF', borderRadius: '8px', textAlign: 'center', fontWeight: 'bold', fontSize: '0.9rem', transition: 'opacity 0.2s' }}
                      onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}

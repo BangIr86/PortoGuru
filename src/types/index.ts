@@ -18,6 +18,7 @@ export interface MataKuliah {
   deskripsi_singkat: string;
   refleksi?: string;
   urutan: number; // PENAMBAHAN KOLOM URUTAN
+  semester?: string; // PENAMBAHAN KOLOM SEMESTER
 }
 
 export interface Topik {

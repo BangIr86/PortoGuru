@@ -25,6 +25,7 @@ export default function Admin() {
   const [mkNama, setMkNama] = useState('');
   const [mkDeskripsi, setMkDeskripsi] = useState('');
   const [mkUrutan, setMkUrutan] = useState<number>(0);
+  const [mkSemester, setMkSemester] = useState('');
   const [mkConn, setMkConn] = useState('');
   const [mkChal, setMkChal] = useState('');
   const [mkConc, setMkConc] = useState('');
@@ -102,11 +103,11 @@ export default function Admin() {
   };
 
   // --- FUNGSI MATA KULIAH 4C (UPDATE URUTAN) ---
-  const resetMatkulForm = () => { setEditingMkId(null); setMkNama(''); setMkDeskripsi(''); setMkUrutan(0); setMkConn(''); setMkChal(''); setMkConc(''); setMkChan(''); };
+  const resetMatkulForm = () => { setEditingMkId(null); setMkNama(''); setMkDeskripsi(''); setMkUrutan(0); setMkSemester(''); setMkConn(''); setMkChal(''); setMkConc(''); setMkChan(''); };
   const handleSaveMK = async (e: React.FormEvent) => {
     e.preventDefault();
     const mkRefleksi4C = JSON.stringify({ connection: mkConn, challenge: mkChal, concept: mkConc, change: mkChan });
-    const dataMK = { nama_mata_kuliah: mkNama, deskripsi_singkat: mkDeskripsi, urutan: mkUrutan, refleksi: mkRefleksi4C };
+    const dataMK = { nama_mata_kuliah: mkNama, deskripsi_singkat: mkDeskripsi, urutan: mkUrutan, semester: mkSemester, refleksi: mkRefleksi4C };
     
     if (editingMkId) {
       const { error } = await supabase.from('mata_kuliah').update(dataMK).eq('id', editingMkId);
@@ -334,6 +335,9 @@ export default function Admin() {
                     <label style={{fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--text-main)'}}>Urutan Tampil (Angka)</label>
                     <input type="number" placeholder="Contoh: 1, 2, 3..." value={mkUrutan} onChange={e => setMkUrutan(parseInt(e.target.value) || 0)} required style={inputStyle} />
                     
+                    <label style={{fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--text-main)'}}>Semester</label>
+                    <input type="text" placeholder="Contoh: 1, 2, atau Ganjil" value={mkSemester} onChange={e => setMkSemester(e.target.value)} style={inputStyle} />
+                    
                     <label style={{fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--text-main)'}}>Nama Mata Kuliah</label>
                     <input type="text" placeholder="Contoh: PPL Mandiri" value={mkNama} onChange={e => setMkNama(e.target.value)} required style={inputStyle} />
                     
@@ -373,6 +377,7 @@ export default function Admin() {
                       <thead>
                         <tr style={{ background: 'var(--bg-color)', color: 'var(--text-heading)' }}>
                           <th style={{ padding: '12px', border: '1px solid var(--card-border)' }}>Urutan</th>
+                          <th style={{ padding: '12px', border: '1px solid var(--card-border)' }}>Semester</th>
                           <th style={{ padding: '12px', border: '1px solid var(--card-border)' }}>Nama Mata Kuliah</th>
                           <th style={{ padding: '12px', border: '1px solid var(--card-border)', textAlign: 'center' }}>Aksi Kelola</th>
                         </tr>
@@ -384,11 +389,12 @@ export default function Admin() {
                           mataKuliahList.map((mk) => (
                             <tr key={mk.id} style={{ background: 'var(--card-bg)' }}>
                               <td style={{ padding: '12px', border: '1px solid var(--card-border)', color: 'var(--text-main)', width: '60px', textAlign: 'center', fontWeight: 'bold' }}>{mk.urutan}</td>
+                              <td style={{ padding: '12px', border: '1px solid var(--card-border)', color: 'var(--text-main)', width: '80px', textAlign: 'center' }}>{mk.semester || '-'}</td>
                               <td style={{ padding: '12px', border: '1px solid var(--card-border)', fontWeight: 'bold', color: 'var(--text-main)' }}>{mk.nama_mata_kuliah}</td>
                               <td style={{ padding: '12px', border: '1px solid var(--card-border)', textAlign: 'center', whiteSpace: 'nowrap' }}>
                                 <button onClick={() => { setManagingMatkulId(mk.id); resetTopikForm(); resetArtefakForm(); }} style={{ padding: '8px 16px', background: '#10B981', color: '#FFFFFF', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '8px', fontWeight: 'bold', marginBottom: '5px' }}>📂 Kelola Topik</button>
                                 <button onClick={() => { 
-                                  setEditingMkId(mk.id); setMkNama(mk.nama_mata_kuliah); setMkDeskripsi(mk.deskripsi_singkat); setMkUrutan(mk.urutan || 0);
+                                  setEditingMkId(mk.id); setMkNama(mk.nama_mata_kuliah); setMkDeskripsi(mk.deskripsi_singkat); setMkUrutan(mk.urutan || 0); setMkSemester(mk.semester || '');
                                   try { const parsed = JSON.parse(mk.refleksi); setMkConn(parsed.connection||''); setMkChal(parsed.challenge||''); setMkConc(parsed.concept||''); setMkChan(parsed.change||''); } 
                                   catch { setMkConn(mk.refleksi||''); setMkChal(''); setMkConc(''); setMkChan(''); } 
                                 }} style={{ padding: '8px 16px', background: 'var(--accent-color)', color: '#FFFFFF', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '8px', marginBottom: '5px' }}>Edit</button>
