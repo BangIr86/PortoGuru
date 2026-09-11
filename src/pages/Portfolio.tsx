@@ -47,7 +47,7 @@ export default function Portfolio() {
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '20px' }}>
           {mataKuliahList.map((mk) => (
-            <div key={mk.id} className="card" style={{ height: '160px', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div key={mk.id} className="card" style={{ minHeight: '190px', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <h3 style={{ fontSize: '1.15rem', color: 'var(--text-heading)', lineHeight: '1.4', margin: 0, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' as const }}>
                 {mk.nama_mata_kuliah}
               </h3>
