@@ -26,6 +26,7 @@ export default function Admin() {
   const [mkDeskripsi, setMkDeskripsi] = useState('');
   const [mkUrutan, setMkUrutan] = useState<number>(0);
   const [mkSemester, setMkSemester] = useState('');
+  const [mkHasTopik, setMkHasTopik] = useState<boolean>(true);
   const [mkConn, setMkConn] = useState('');
   const [mkChal, setMkChal] = useState('');
   const [mkConc, setMkConc] = useState('');
@@ -103,11 +104,11 @@ export default function Admin() {
   };
 
   // --- FUNGSI MATA KULIAH 4C (UPDATE URUTAN) ---
-  const resetMatkulForm = () => { setEditingMkId(null); setMkNama(''); setMkDeskripsi(''); setMkUrutan(0); setMkSemester(''); setMkConn(''); setMkChal(''); setMkConc(''); setMkChan(''); };
+  const resetMatkulForm = () => { setEditingMkId(null); setMkNama(''); setMkDeskripsi(''); setMkUrutan(0); setMkSemester(''); setMkHasTopik(true); setMkConn(''); setMkChal(''); setMkConc(''); setMkChan(''); };
   const handleSaveMK = async (e: React.FormEvent) => {
     e.preventDefault();
     const mkRefleksi4C = JSON.stringify({ connection: mkConn, challenge: mkChal, concept: mkConc, change: mkChan });
-    const dataMK = { nama_mata_kuliah: mkNama, deskripsi_singkat: mkDeskripsi, urutan: mkUrutan, semester: mkSemester, refleksi: mkRefleksi4C };
+    const dataMK = { nama_mata_kuliah: mkNama, deskripsi_singkat: mkDeskripsi, urutan: mkUrutan, semester: mkSemester, has_topik: mkHasTopik, refleksi: mkRefleksi4C };
     
     if (editingMkId) {
       const { error } = await supabase.from('mata_kuliah').update(dataMK).eq('id', editingMkId);
@@ -152,7 +153,8 @@ export default function Admin() {
   const resetArtefakForm = () => { setEditingArtefakId(null); setAJudul(''); setAJenis('Dokumen / PDF'); setALink(''); setAFile(null); setATopikId(''); };
   const handleSaveArtefak = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!aTopikId) return showToast('Pilih Topik terlebih dahulu!', 'error');
+    const isTopikActive = activeMatkulData?.has_topik !== false;
+    if (isTopikActive && !aTopikId) return showToast('Pilih Topik terlebih dahulu!', 'error');
 
     let finalUrl = aLink;
     setIsUploading(true);
@@ -166,7 +168,14 @@ export default function Admin() {
         const { data: publicURLData } = supabase.storage.from('portfolio-files').getPublicUrl(fileName);
         finalUrl = publicURLData.publicUrl;
       }
-      const updateData: any = { judul: aJudul, jenis: aJenis, topik_id: parseInt(aTopikId) };
+      const updateData: any = { judul: aJudul, jenis: aJenis };
+      if (isTopikActive) {
+        updateData.topik_id = parseInt(aTopikId);
+        updateData.mata_kuliah_id = null;
+      } else {
+        updateData.mata_kuliah_id = managingMatkulId;
+        updateData.topik_id = null;
+      }
       if (finalUrl) updateData.link_url = finalUrl;
 
       if (editingArtefakId !== null) {
@@ -192,7 +201,7 @@ export default function Admin() {
 
   const activeMatkulData = mataKuliahList.find(mk => mk.id === managingMatkulId);
   const activeTopikList = topikList.filter(t => t.mata_kuliah_id === managingMatkulId);
-  const activeArtefakList = artefakList.filter(a => a.topik?.mata_kuliah_id === managingMatkulId);
+  const activeArtefakList = artefakList.filter(a => a.topik?.mata_kuliah_id === managingMatkulId || a.mata_kuliah_id === managingMatkulId);
 
   const inputStyle = { width: '100%', padding: '12px', marginBottom: '15px', borderRadius: '6px', border: '1px solid var(--card-border)', fontFamily: 'inherit', background: 'var(--bg-color)', color: 'var(--text-main)', boxSizing: 'border-box' as const };
 
@@ -344,6 +353,11 @@ export default function Admin() {
                     <label style={{fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--text-main)'}}>Deskripsi Singkat</label>
                     <textarea placeholder="Deskripsi keseluruhan..." value={mkDeskripsi} onChange={e => setMkDeskripsi(e.target.value)} rows={2} required style={inputStyle} />
                     
+                    <label style={{fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginTop: '10px'}}>
+                      <input type="checkbox" checked={mkHasTopik} onChange={e => setMkHasTopik(e.target.checked)} style={{ width: '18px', height: '18px' }} />
+                      Mata Kuliah ini menggunakan "Topik" (Nonaktifkan jika artefak langsung di dalam Mata Kuliah)
+                    </label>
+                    
                     <hr style={{ border: 'none', borderTop: '1px dashed var(--card-border)', margin: '15px 0 20px 0' }} />
                     <h5 style={{ marginTop: 0, marginBottom: '15px', color: 'var(--accent-color)', fontSize: '1rem' }}>Form Refleksi 4C (Mata Kuliah)</h5>
                     
@@ -392,9 +406,9 @@ export default function Admin() {
                               <td style={{ padding: '12px', border: '1px solid var(--card-border)', color: 'var(--text-main)', width: '80px', textAlign: 'center' }}>{mk.semester || '-'}</td>
                               <td style={{ padding: '12px', border: '1px solid var(--card-border)', fontWeight: 'bold', color: 'var(--text-main)' }}>{mk.nama_mata_kuliah}</td>
                               <td style={{ padding: '12px', border: '1px solid var(--card-border)', textAlign: 'center', whiteSpace: 'nowrap' }}>
-                                <button onClick={() => { setManagingMatkulId(mk.id); resetTopikForm(); resetArtefakForm(); }} style={{ padding: '8px 16px', background: '#10B981', color: '#FFFFFF', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '8px', fontWeight: 'bold', marginBottom: '5px' }}>📂 Kelola Topik</button>
+                                <button onClick={() => { setManagingMatkulId(mk.id); resetTopikForm(); resetArtefakForm(); }} style={{ padding: '8px 16px', background: '#10B981', color: '#FFFFFF', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '8px', fontWeight: 'bold', marginBottom: '5px' }}>📂 Kelola Konten</button>
                                 <button onClick={() => { 
-                                  setEditingMkId(mk.id); setMkNama(mk.nama_mata_kuliah); setMkDeskripsi(mk.deskripsi_singkat); setMkUrutan(mk.urutan || 0); setMkSemester(mk.semester || '');
+                                  setEditingMkId(mk.id); setMkNama(mk.nama_mata_kuliah); setMkDeskripsi(mk.deskripsi_singkat); setMkUrutan(mk.urutan || 0); setMkSemester(mk.semester || ''); setMkHasTopik(mk.has_topik ?? true);
                                   try { const parsed = JSON.parse(mk.refleksi); setMkConn(parsed.connection||''); setMkChal(parsed.challenge||''); setMkConc(parsed.concept||''); setMkChan(parsed.change||''); } 
                                   catch { setMkConn(mk.refleksi||''); setMkChal(''); setMkConc(''); setMkChan(''); } 
                                 }} style={{ padding: '8px 16px', background: 'var(--accent-color)', color: '#FFFFFF', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '8px', marginBottom: '5px' }}>Edit</button>
@@ -413,63 +427,70 @@ export default function Admin() {
                   <h2 style={{ marginTop: 0, color: 'var(--text-heading)', borderBottom: '2px solid var(--accent-color)', paddingBottom: '12px', fontSize: '1.5rem' }}>Mengelola: <span style={{ color: 'var(--accent-color)' }}>{activeMatkulData?.nama_mata_kuliah}</span></h2>
 
                   {/* KELOLA TOPIK (TANPA 4C) */}
-                  <div style={{ marginTop: '30px', padding: '20px', border: '1px solid var(--card-border)', borderRadius: '10px', background: 'var(--bg-color)' }}>
-                    <h3 style={{ marginTop: 0, color: 'var(--text-heading)', marginBottom: '20px' }}>1. Manajemen Topik</h3>
-                    <form onSubmit={handleSaveTopik}>
-                      <h5 style={{ margin: '0 0 10px 0', color: 'var(--accent-color)' }}>{editingTopikId ? '✎ Edit Topik' : '+ Tambah Topik Baru'}</h5>
-                      <input type="text" placeholder="Nama Topik (Cth: Analisis Media Pembelajaran)" value={tNama} onChange={e => setTNama(e.target.value)} required style={inputStyle} />
-                      <textarea placeholder="Uraian Singkat Topik..." value={tUraian} onChange={e => setTUraian(e.target.value)} rows={2} required style={inputStyle} />
-                      <textarea placeholder="Catatan Opsional..." value={tRefleksi} onChange={e => setTRefleksi(e.target.value)} rows={2} style={inputStyle} />
+                  {activeMatkulData?.has_topik !== false && (
+                    <div style={{ marginTop: '30px', padding: '20px', border: '1px solid var(--card-border)', borderRadius: '10px', background: 'var(--bg-color)' }}>
+                      <h3 style={{ marginTop: 0, color: 'var(--text-heading)', marginBottom: '20px' }}>1. Manajemen Topik</h3>
+                      <form onSubmit={handleSaveTopik}>
+                        <h5 style={{ margin: '0 0 10px 0', color: 'var(--accent-color)' }}>{editingTopikId ? '✎ Edit Topik' : '+ Tambah Topik Baru'}</h5>
+                        <input type="text" placeholder="Nama Topik (Cth: Analisis Media Pembelajaran)" value={tNama} onChange={e => setTNama(e.target.value)} required style={inputStyle} />
+                        <textarea placeholder="Uraian Singkat Topik..." value={tUraian} onChange={e => setTUraian(e.target.value)} rows={2} required style={inputStyle} />
+                        <textarea placeholder="Catatan Opsional..." value={tRefleksi} onChange={e => setTRefleksi(e.target.value)} rows={2} style={inputStyle} />
 
-                      <div className="mobile-stack" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                        <button type="submit" className="btn-primary" style={{ padding: '8px 16px', flex: 1 }}>{editingTopikId ? 'Simpan Perubahan Topik' : 'Simpan Topik'}</button>
-                        {editingTopikId && <button type="button" onClick={resetTopikForm} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--card-border)', color: 'var(--text-main)', borderRadius: '6px', cursor: 'pointer', flex: 1 }}>Batal</button>}
+                        <div className="mobile-stack" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                          <button type="submit" className="btn-primary" style={{ padding: '8px 16px', flex: 1 }}>{editingTopikId ? 'Simpan Perubahan Topik' : 'Simpan Topik'}</button>
+                          {editingTopikId && <button type="button" onClick={resetTopikForm} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--card-border)', color: 'var(--text-main)', borderRadius: '6px', cursor: 'pointer', flex: 1 }}>Batal</button>}
+                        </div>
+                      </form>
+                      
+                      <div className="table-wrapper">
+                        <table style={{ width: '100%', marginTop: '20px', borderCollapse: 'collapse', fontSize: '0.85rem', background: 'var(--card-bg)' }}>
+                          <thead>
+                            <tr style={{ background: 'rgba(128,128,128,0.1)', color: 'var(--text-heading)' }}>
+                              <th style={{ padding: '10px', border: '1px solid var(--card-border)', textAlign: 'left' }}>Nama Topik</th>
+                              <th style={{ padding: '10px', border: '1px solid var(--card-border)', textAlign: 'center', width: '150px' }}>Aksi</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {activeTopikList.length === 0 ? (
+                              <tr><td colSpan={2} style={{ padding: '10px', textAlign: 'center', color: 'var(--text-muted)' }}>Belum ada topik.</td></tr>
+                            ) : (
+                              activeTopikList.map(t => (
+                                <tr key={t.id}>
+                                  <td style={{ padding: '10px', border: '1px solid var(--card-border)', color: 'var(--text-main)' }}>{t.nama_topik}</td>
+                                  <td style={{ padding: '10px', border: '1px solid var(--card-border)', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                                    <button onClick={() => { 
+                                      setEditingTopikId(t.id); setTNama(t.nama_topik); setTUraian(t.uraian_topik); setTRefleksi(t.refleksi || '');
+                                    }} style={{ padding: '4px 8px', background: 'var(--accent-color)', color: '#FFFFFF', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '5px' }}>Edit</button>
+                                    <button onClick={() => handleDeleteTopik(t.id)} style={{ padding: '4px 8px', background: '#EF4444', color: '#FFFFFF', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Hapus</button>
+                                  </td>
+                                </tr>
+                              ))
+                            )}
+                          </tbody>
+                        </table>
                       </div>
-                    </form>
-                    
-                    <div className="table-wrapper">
-                      <table style={{ width: '100%', marginTop: '20px', borderCollapse: 'collapse', fontSize: '0.85rem', background: 'var(--card-bg)' }}>
-                        <thead>
-                          <tr style={{ background: 'rgba(128,128,128,0.1)', color: 'var(--text-heading)' }}>
-                            <th style={{ padding: '10px', border: '1px solid var(--card-border)', textAlign: 'left' }}>Nama Topik</th>
-                            <th style={{ padding: '10px', border: '1px solid var(--card-border)', textAlign: 'center', width: '150px' }}>Aksi</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {activeTopikList.length === 0 ? (
-                            <tr><td colSpan={2} style={{ padding: '10px', textAlign: 'center', color: 'var(--text-muted)' }}>Belum ada topik.</td></tr>
-                          ) : (
-                            activeTopikList.map(t => (
-                              <tr key={t.id}>
-                                <td style={{ padding: '10px', border: '1px solid var(--card-border)', color: 'var(--text-main)' }}>{t.nama_topik}</td>
-                                <td style={{ padding: '10px', border: '1px solid var(--card-border)', textAlign: 'center', whiteSpace: 'nowrap' }}>
-                                  <button onClick={() => { 
-                                    setEditingTopikId(t.id); setTNama(t.nama_topik); setTUraian(t.uraian_topik); setTRefleksi(t.refleksi || '');
-                                  }} style={{ padding: '4px 8px', background: 'var(--accent-color)', color: '#FFFFFF', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '5px' }}>Edit</button>
-                                  <button onClick={() => handleDeleteTopik(t.id)} style={{ padding: '4px 8px', background: '#EF4444', color: '#FFFFFF', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Hapus</button>
-                                </td>
-                              </tr>
-                            ))
-                          )}
-                        </tbody>
-                      </table>
                     </div>
-                  </div>
+                  )}
 
                   {/* KELOLA ARTEFAK */}
                   <div style={{ marginTop: '30px', padding: '20px', border: '1px solid var(--card-border)', borderRadius: '10px', background: 'var(--bg-color)' }}>
                     <h3 style={{ marginTop: 0, color: 'var(--text-heading)', marginBottom: '20px' }}>2. Manajemen Artefak</h3>
-                    {activeTopikList.length === 0 ? (
+                    {activeMatkulData?.has_topik !== false && activeTopikList.length === 0 ? (
                       <div style={{ background: 'rgba(234, 179, 8, 0.1)', border: '1px solid #EAB308', color: '#EAB308', padding: '15px', borderRadius: '6px', fontWeight: 'bold' }}>⚠️ Buat minimal 1 Topik dulu!</div>
                     ) : (
                       <>
                         <form onSubmit={handleSaveArtefak}>
                           <h5 style={{ margin: '0 0 10px 0', color: 'var(--accent-color)' }}>{editingArtefakId ? '✎ Edit Artefak' : '+ Tambah Artefak Baru'}</h5>
-                          <label style={{fontWeight: 'bold', display: 'block', marginBottom: '5px', fontSize: '0.85rem', color: 'var(--text-main)'}}>Pilih Topik Induk</label>
-                          <select value={aTopikId} onChange={e => setATopikId(e.target.value)} required style={inputStyle}>
-                            <option value="" disabled>-- Pilih Topik --</option>
-                            {activeTopikList.map(t => <option key={t.id} value={t.id}>{t.nama_topik}</option>)}
-                          </select>
+                          
+                          {activeMatkulData?.has_topik !== false && (
+                            <>
+                              <label style={{fontWeight: 'bold', display: 'block', marginBottom: '5px', fontSize: '0.85rem', color: 'var(--text-main)'}}>Pilih Topik Induk</label>
+                              <select value={aTopikId} onChange={e => setATopikId(e.target.value)} required style={inputStyle}>
+                                <option value="" disabled>-- Pilih Topik --</option>
+                                {activeTopikList.map(t => <option key={t.id} value={t.id}>{t.nama_topik}</option>)}
+                              </select>
+                            </>
+                          )}
                           <label style={{fontWeight: 'bold', display: 'block', marginBottom: '5px', fontSize: '0.85rem', color: 'var(--text-main)'}}>Judul Artefak</label>
                           <input type="text" placeholder="Cth: Modul Ajar Siklus 1" value={aJudul} onChange={e => setAJudul(e.target.value)} required style={inputStyle} />
                           
@@ -499,20 +520,24 @@ export default function Admin() {
                             <thead>
                               <tr style={{ background: 'rgba(128,128,128,0.1)', color: 'var(--text-heading)' }}>
                                 <th style={{ padding: '10px', border: '1px solid var(--card-border)', textAlign: 'left' }}>Judul Artefak</th>
-                                <th style={{ padding: '10px', border: '1px solid var(--card-border)', textAlign: 'left' }}>Topik Induk</th>
+                                {activeMatkulData?.has_topik !== false && (
+                                  <th style={{ padding: '10px', border: '1px solid var(--card-border)', textAlign: 'left' }}>Topik Induk</th>
+                                )}
                                 <th style={{ padding: '10px', border: '1px solid var(--card-border)', textAlign: 'center', width: '150px' }}>Aksi</th>
                               </tr>
                             </thead>
                             <tbody>
                               {activeArtefakList.length === 0 ? (
-                                <tr><td colSpan={3} style={{ padding: '10px', textAlign: 'center', color: 'var(--text-muted)' }}>Belum ada artefak.</td></tr>
+                                <tr><td colSpan={activeMatkulData?.has_topik !== false ? 3 : 2} style={{ padding: '10px', textAlign: 'center', color: 'var(--text-muted)' }}>Belum ada artefak.</td></tr>
                               ) : (
                                 activeArtefakList.map(a => (
                                   <tr key={a.id}>
                                     <td style={{ padding: '10px', border: '1px solid var(--card-border)', color: 'var(--text-main)' }}>{a.judul} <br/><span style={{ color: 'var(--accent-color)', fontSize: '0.75rem' }}>({a.jenis})</span></td>
-                                    <td style={{ padding: '10px', border: '1px solid var(--card-border)', color: 'var(--text-main)' }}>{a.topik?.nama_topik}</td>
+                                    {activeMatkulData?.has_topik !== false && (
+                                      <td style={{ padding: '10px', border: '1px solid var(--card-border)', color: 'var(--text-main)' }}>{a.topik?.nama_topik || '-'}</td>
+                                    )}
                                     <td style={{ padding: '10px', border: '1px solid var(--card-border)', textAlign: 'center', whiteSpace: 'nowrap' }}>
-                                      <button onClick={() => { setEditingArtefakId(a.id); setATopikId(a.topik_id.toString()); setAJudul(a.judul); setAJenis(a.jenis); setALink(a.link_url); }} style={{ padding: '4px 8px', background: 'var(--accent-color)', color: '#FFFFFF', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '5px' }}>Edit</button>
+                                      <button onClick={() => { setEditingArtefakId(a.id); setATopikId(a.topik_id?.toString() || ''); setAJudul(a.judul); setAJenis(a.jenis); setALink(a.link_url); }} style={{ padding: '4px 8px', background: 'var(--accent-color)', color: '#FFFFFF', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '5px' }}>Edit</button>
                                       <button onClick={() => handleDeleteArtefak(a.id)} style={{ padding: '4px 8px', background: '#EF4444', color: '#FFFFFF', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Hapus</button>
                                     </td>
                                   </tr>

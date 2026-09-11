@@ -21,22 +21,28 @@ export default function PortfolioDetail() {
       const { data: mkData, error: mkError } = await supabase.from('mata_kuliah').select('*').eq('id', id).single();
       if (mkError) throw mkError;
 
-      const { data: topikData } = await supabase.from('topik').select('*').eq('mata_kuliah_id', id).order('id', { ascending: true });
-
       let artefakData: any[] = [];
-      const topikIds = topikData?.map(t => t.id) || [];
-      
-      if (topikIds.length > 0) {
-        const { data: aData } = await supabase.from('artefak').select('*').in('topik_id', topikIds);
+      let combinedTopics: any[] = [];
+
+      if (mkData.has_topik !== false) {
+        const { data: topikData } = await supabase.from('topik').select('*').eq('mata_kuliah_id', id).order('id', { ascending: true });
+        const topikIds = topikData?.map(t => t.id) || [];
+        
+        if (topikIds.length > 0) {
+          const { data: aData } = await supabase.from('artefak').select('*').in('topik_id', topikIds);
+          if (aData) artefakData = aData;
+        }
+
+        combinedTopics = topikData?.map(t => ({
+          ...t,
+          artefak: artefakData.filter(a => a.topik_id === t.id)
+        })) || [];
+        setMatkul({ ...mkData, topik: combinedTopics });
+      } else {
+        const { data: aData } = await supabase.from('artefak').select('*').eq('mata_kuliah_id', id);
         if (aData) artefakData = aData;
+        setMatkul({ ...mkData, artefakLangsung: artefakData });
       }
-
-      const combinedTopics = topikData?.map(t => ({
-        ...t,
-        artefak: artefakData.filter(a => a.topik_id === t.id)
-      })) || [];
-
-      setMatkul({ ...mkData, topik: combinedTopics });
       
       // Auto-pilih artefak pertama jika ada
       if (artefakData.length > 0) setSelectedArtefak(artefakData[0]);
@@ -94,8 +100,10 @@ export default function PortfolioDetail() {
     return <iframe src={`${item.link_url}#toolbar=0&view=FitH`} width="100%" height="100%" style={{ border: 'none', borderRadius: '8px', background: '#FFFFFF' }}></iframe>;
   };
 
-  // Mengumpulkan semua artefak dari semua topik untuk menu sebelah kiri
-  const allArtefak = matkul?.topik?.flatMap((t: any) => t.artefak) || [];
+  // Mengumpulkan semua artefak, baik dari topik maupun langsung dari mata kuliah
+  const allArtefak = matkul?.has_topik !== false 
+    ? (matkul?.topik?.flatMap((t: any) => t.artefak) || [])
+    : (matkul?.artefakLangsung || []);
 
   if (loading) return <div className="container" style={{ textAlign: 'center', color: 'var(--text-muted)' }}><h2>Memuat...</h2></div>;
   if (!matkul) return <div className="container" style={{ textAlign: 'center' }}><h2>Mata Kuliah Tidak Ditemukan</h2><Link to="/ppg-corner" className="btn-primary">Kembali</Link></div>;

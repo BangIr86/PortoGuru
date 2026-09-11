@@ -19,6 +19,7 @@ export interface MataKuliah {
   refleksi?: string;
   urutan: number; // PENAMBAHAN KOLOM URUTAN
   semester?: string; // PENAMBAHAN KOLOM SEMESTER
+  has_topik?: boolean; // KOLOM OPSIONAL TOPIK
 }
 
 export interface Topik {
@@ -35,7 +36,8 @@ export interface Artefak {
   judul: string;
   jenis: string;
   link_url: string;
-  topik_id: number;
+  topik_id?: number; // BISA NULL JIKA LANGSUNG KE MK
+  mata_kuliah_id?: number; // UNTUK ARTEFAK TANPA TOPIK
   created_at?: string;
-    topik?: Topik;
+  topik?: Topik;
 }
