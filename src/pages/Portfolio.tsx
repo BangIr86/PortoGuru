@@ -67,6 +67,7 @@ export default function Portfolio() {
                   Lihat Detail →
                 </div>
               </Link>
+              </div>
             </div>
           ))}
         </div>
