@@ -132,29 +132,31 @@ export default function PortfolioDetail() {
         ) : (
           <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'flex-start' }}>
             
-            {/* KIRI: DAFTAR TOMBOL ARTEFAK */}
-            <div style={{ flex: '1 1 250px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {allArtefak.map((a: any) => {
-                const isActive = selectedArtefak?.id === a.id;
-                return (
-                  <button
-                    key={a.id}
-                    onClick={() => setSelectedArtefak(a)}
-                    style={{
-                      padding: '15px', textAlign: 'left', borderRadius: '8px', cursor: 'pointer',
-                      background: isActive ? 'var(--accent-glow)' : 'var(--card-bg)',
-                      border: `1px solid ${isActive ? 'var(--accent-color)' : 'var(--card-border)'}`,
-                      color: isActive ? 'var(--accent-color)' : 'var(--text-main)',
-                      fontWeight: isActive ? 'bold' : 'normal',
-                      transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '10px'
-                    }}
-                  >
-                    <span style={{ fontSize: '1.5rem' }}>{a.jenis.includes('Video') ? '🎥' : a.jenis.includes('Foto') ? '📸' : '📄'}</span>
-                    <span>{a.judul}</span>
-                  </button>
-                );
-              })}
-            </div>
+            {/* KIRI: DAFTAR TOMBOL ARTEFAK (Disembunyikan jika artefak hanya 1) */}
+            {allArtefak.length > 1 && (
+              <div style={{ flex: '1 1 250px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {allArtefak.map((a: any) => {
+                  const isActive = selectedArtefak?.id === a.id;
+                  return (
+                    <button
+                      key={a.id}
+                      onClick={() => setSelectedArtefak(a)}
+                      style={{
+                        padding: '15px', textAlign: 'left', borderRadius: '8px', cursor: 'pointer',
+                        background: isActive ? 'var(--accent-glow)' : 'var(--card-bg)',
+                        border: `1px solid ${isActive ? 'var(--accent-color)' : 'var(--card-border)'}`,
+                        color: isActive ? 'var(--accent-color)' : 'var(--text-main)',
+                        fontWeight: isActive ? 'bold' : 'normal',
+                        transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '10px'
+                      }}
+                    >
+                      <span style={{ fontSize: '1.5rem' }}>{a.jenis.includes('Video') ? '🎥' : a.jenis.includes('Foto') ? '📸' : '📄'}</span>
+                      <span>{a.judul}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             {/* KANAN: PREVIEW ARTEFAK */}
             <div style={{ flex: '3 1 500px', height: '600px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column' }}>
