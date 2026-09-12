@@ -105,10 +105,13 @@ export default function Admin() {
 
   // --- FUNGSI MATA KULIAH 4C (UPDATE URUTAN) ---
   const resetMatkulForm = () => { setEditingMkId(null); setMkNama(''); setMkDeskripsi(''); setMkUrutan(0); setMkSemester(''); setMkHasTopik(true); setMkConn(''); setMkChal(''); setMkConc(''); setMkChan(''); };
+  
+  const generateSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+
   const handleSaveMK = async (e: React.FormEvent) => {
     e.preventDefault();
     const mkRefleksi4C = JSON.stringify({ connection: mkConn, challenge: mkChal, concept: mkConc, change: mkChan });
-    const dataMK = { nama_mata_kuliah: mkNama, deskripsi_singkat: mkDeskripsi, urutan: mkUrutan, semester: mkSemester, has_topik: mkHasTopik, refleksi: mkRefleksi4C };
+    const dataMK = { nama_mata_kuliah: mkNama, slug: generateSlug(mkNama), deskripsi_singkat: mkDeskripsi, urutan: mkUrutan, semester: mkSemester, has_topik: mkHasTopik, refleksi: mkRefleksi4C };
     
     if (editingMkId) {
       const { error } = await supabase.from('mata_kuliah').update(dataMK).eq('id', editingMkId);

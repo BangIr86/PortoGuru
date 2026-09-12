@@ -15,11 +15,12 @@ export interface Profil {
 export interface MataKuliah {
   id: number;
   nama_mata_kuliah: string;
+  slug?: string; // TAMBAHAN SLUG
   deskripsi_singkat: string;
   refleksi?: string;
-  urutan: number; // PENAMBAHAN KOLOM URUTAN
-  semester?: string; // PENAMBAHAN KOLOM SEMESTER
-  has_topik?: boolean; // KOLOM OPSIONAL TOPIK
+  urutan: number; 
+  semester?: string; 
+  has_topik?: boolean; 
 }
 
 export interface Topik {

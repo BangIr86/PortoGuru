@@ -59,7 +59,7 @@ export default function Portfolio() {
                   </div>
                 )}
                 
-                <Link to={`/ppg-corner/${mk.id}`} style={{ textDecoration: 'none', width: '100%' }}>
+                <Link to={`/ppg-corner/${mk.slug || mk.id}`} style={{ textDecoration: 'none', width: '100%' }}>
                   <div style={{ padding: '10px', background: 'var(--accent-color)', color: '#FFFFFF', borderRadius: '8px', textAlign: 'center', fontWeight: 'bold', fontSize: '0.9rem', transition: 'opacity 0.2s' }}
                      onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}
                      onMouseOut={(e) => e.currentTarget.style.opacity = '1'}

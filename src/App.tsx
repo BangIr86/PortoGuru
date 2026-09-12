@@ -153,6 +153,7 @@ function AppContent() {
           <Route path="/about" element={<About />} />
           <Route path="/ppg-corner" element={<Portfolio />} />
           <Route path="/ppg-corner/:id" element={<PortfolioDetail />} />
+          <Route path="/ppg-corner/:slug" element={<PortfolioDetail />} />
           <Route path="/contact" element={<Contact />} />
           
           {/* Rute /admin dipertahankan agar bisa dites di localhost:5173/admin */}
