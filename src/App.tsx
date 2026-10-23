@@ -154,7 +154,6 @@ function AppContent() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/ppg-corner" element={<Portfolio />} />
-          <Route path="/ppg-corner/:id" element={<PortfolioDetail />} />
           <Route path="/ppg-corner/:slug" element={<PortfolioDetail />} />
           <Route path="/innovation-corner" element={<Innovation />} />
           <Route path="/contact" element={<Contact />} />

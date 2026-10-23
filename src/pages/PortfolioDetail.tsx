@@ -3,7 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 
 export default function PortfolioDetail() {
-  const { slug } = useParams();
+  const { slug, id } = useParams();
+  const identifier = (slug || id || '').trim();
   const [matkul, setMatkul] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   
@@ -13,26 +14,35 @@ export default function PortfolioDetail() {
   useEffect(() => {
     window.scrollTo(0, 0);
     fetchDetailData();
-  }, [slug]);
+  }, [identifier]);
 
   const fetchDetailData = async () => {
     try {
       setLoading(true);
+      if (!identifier) {
+        setMatkul(null);
+        return;
+      }
       
-      let mkData, mkError;
-      const isNumeric = /^\d+$/.test(slug || '');
+      let mkData: any = null;
+      let mkError: any = null;
+      const isNumeric = /^\d+$/.test(identifier);
       
       if (isNumeric) {
-         const res = await supabase.from('mata_kuliah').select('*').or(`slug.eq.${slug},id.eq.${slug}`).single();
+         const res = await supabase.from('mata_kuliah').select('*').or(`slug.eq.${identifier},id.eq.${identifier}`).maybeSingle();
          mkData = res.data;
          mkError = res.error;
       } else {
-         const res = await supabase.from('mata_kuliah').select('*').eq('slug', slug).single();
+         const res = await supabase.from('mata_kuliah').select('*').eq('slug', identifier).maybeSingle();
          mkData = res.data;
          mkError = res.error;
       }
       
       if (mkError) throw mkError;
+      if (!mkData) {
+        setMatkul(null);
+        return;
+      }
       const mkId = mkData.id;
 
       let artefakData: any[] = [];
