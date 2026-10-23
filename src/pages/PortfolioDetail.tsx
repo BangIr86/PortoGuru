@@ -183,7 +183,7 @@ export default function PortfolioDetail() {
             )}
 
             {/* KANAN: PREVIEW ARTEFAK */}
-            <div style={{ flex: '3 1 500px', height: '600px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ flex: '3 1 320px', maxWidth: '100%', boxSizing: 'border-box', height: '600px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column' }}>
               {selectedArtefak && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', paddingBottom: '15px', borderBottom: '1px solid var(--card-border)' }}>
                   <div>

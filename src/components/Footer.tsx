@@ -48,6 +48,9 @@ export default function Footer() {
             <li>
               <Link to="/ppg-corner" style={{ color: 'var(--text-main)', textDecoration: 'none', fontSize: '0.95rem', transition: 'color 0.2s' }}>PPG Corner</Link>
             </li>
+            <li>
+              <Link to="/innovation-corner" style={{ color: 'var(--text-main)', textDecoration: 'none', fontSize: '0.95rem', transition: 'color 0.2s' }}>Innovation Corner</Link>
+            </li>
           </ul>
         </div>
 
