@@ -42,3 +42,13 @@ export interface Artefak {
   created_at?: string;
   topik?: Topik;
 }
+
+export interface Inovasi {
+  id: number;
+  judul: string;
+  deskripsi: string;
+  link_url: string;
+  gambar_url?: string;
+  urutan: number;
+  created_at?: string;
+}

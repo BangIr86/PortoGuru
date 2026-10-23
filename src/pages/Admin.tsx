@@ -6,7 +6,7 @@ import type { Profil } from '../types';
 export default function Admin() {
   const [isAuth, setIsAuth] = useState(false);
   const [passcode, setPasscode] = useState('');
-  const [activeTab, setActiveTab] = useState<'profil' | 'manajemen'>('profil');
+  const [activeTab, setActiveTab] = useState<'profil' | 'manajemen' | 'inovasi'>('profil');
   const [managingMatkulId, setManagingMatkulId] = useState<number | null>(null);
 
   const [mataKuliahList, setMataKuliahList] = useState<any[]>([]);
@@ -47,6 +47,15 @@ export default function Admin() {
   const [aFile, setAFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
+  // --- STATE INOVASI ---
+  const [inovasiList, setInovasiList] = useState<any[]>([]);
+  const [editingInovasiId, setEditingInovasiId] = useState<number | null>(null);
+  const [iJudul, setIJudul] = useState('');
+  const [iDeskripsi, setIDeskripsi] = useState('');
+  const [iLinkUrl, setILinkUrl] = useState('');
+  const [iGambarUrl, setIGambarUrl] = useState('');
+  const [iUrutan, setIUrutan] = useState<number>(0);
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (passcode === 'khoirulibad86') { setIsAuth(true); showToast('Berhasil masuk ke panel admin!', 'success'); } 
@@ -68,6 +77,9 @@ export default function Admin() {
 
     const { data: aData } = await supabase.from('artefak').select('*, topik(id, nama_topik, mata_kuliah_id)');
     if (aData) setArtefakList(aData);
+    
+    const { data: iData } = await supabase.from('inovasi').select('*').order('urutan', { ascending: true });
+    if (iData) setInovasiList(iData);
   };
 
   useEffect(() => { if (isAuth) fetchData(); }, [isAuth]);
@@ -202,6 +214,33 @@ export default function Admin() {
     }
   };
 
+  // --- FUNGSI INOVASI ---
+  const resetInovasiForm = () => { setEditingInovasiId(null); setIJudul(''); setIDeskripsi(''); setILinkUrl(''); setIGambarUrl(''); setIUrutan(0); };
+  const handleSaveInovasi = async (e: React.FormEvent) => {
+    e.preventDefault();
+    let finalLinkUrl = iLinkUrl.trim();
+    if (finalLinkUrl && !/^https?:\/\//i.test(finalLinkUrl)) finalLinkUrl = 'https://' + finalLinkUrl;
+    
+    let finalGambarUrl = iGambarUrl.trim();
+    if (finalGambarUrl && !/^https?:\/\//i.test(finalGambarUrl)) finalGambarUrl = 'https://' + finalGambarUrl;
+
+    const dataInovasi = { judul: iJudul, deskripsi: iDeskripsi, link_url: finalLinkUrl, gambar_url: finalGambarUrl, urutan: iUrutan };
+    
+    if (editingInovasiId) {
+      const { error } = await supabase.from('inovasi').update(dataInovasi).eq('id', editingInovasiId);
+      if (error) showToast('Gagal memperbarui inovasi: ' + error.message, 'error'); else { showToast('Inovasi diperbarui!', 'success'); fetchData(); resetInovasiForm(); }
+    } else {
+      const { error } = await supabase.from('inovasi').insert([dataInovasi]);
+      if (error) showToast('Gagal menambah inovasi: ' + error.message, 'error'); else { showToast('Inovasi ditambahkan!', 'success'); fetchData(); resetInovasiForm(); }
+    }
+  };
+  const handleDeleteInovasi = async (id: number) => {
+    if (window.confirm('Hapus inovasi ini?')) {
+      const { error } = await supabase.from('inovasi').delete().eq('id', id);
+      if (error) showToast('Gagal menghapus: ' + error.message, 'error'); else { showToast('Inovasi dihapus!', 'success'); fetchData(); }
+    }
+  };
+
   const activeMatkulData = mataKuliahList.find(mk => mk.id === managingMatkulId);
   const activeTopikList = topikList.filter(t => t.mata_kuliah_id === managingMatkulId);
   const activeArtefakList = artefakList.filter(a => a.topik?.mata_kuliah_id === managingMatkulId || a.mata_kuliah_id === managingMatkulId);
@@ -258,7 +297,7 @@ export default function Admin() {
         </div>
 
         <nav className="admin-nav" style={{ flex: 1, padding: '20px 0', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-          {[ { id: 'profil', label: '✎ Kelola Profil' }, { id: 'manajemen', label: '📚 Manajemen MK & Topik' } ].map(tab => {
+          {[ { id: 'profil', label: '✎ Kelola Profil' }, { id: 'manajemen', label: '📚 Manajemen MK & Topik' }, { id: 'inovasi', label: '💡 Manajemen Inovasi' } ].map(tab => {
             const isActive = activeTab === tab.id;
             return (
               <button 
@@ -554,6 +593,71 @@ export default function Admin() {
                   </div>
                 </>
               )}
+            </div>
+          )}
+
+          {activeTab === 'inovasi' && (
+            <div>
+              <h2 style={{ marginTop: 0, color: 'var(--text-heading)', borderBottom: '2px solid var(--card-border)', paddingBottom: '12px' }}>Manajemen Inovasi</h2>
+              
+              <div style={{ background: 'var(--bg-color)', padding: '20px', borderRadius: '8px', border: '1px solid var(--card-border)', marginBottom: '30px' }}>
+                <h3 style={{ marginTop: 0, color: 'var(--accent-color)' }}>{editingInovasiId ? 'Edit Inovasi' : 'Tambah Inovasi Baru'}</h3>
+                <form onSubmit={handleSaveInovasi}>
+                  <label style={{fontWeight: 'bold', display: 'block', marginBottom: '5px', fontSize: '0.85rem'}}>Judul Inovasi</label>
+                  <input type="text" placeholder="Masukkan judul inovasi..." value={iJudul} onChange={e => setIJudul(e.target.value)} required style={inputStyle} />
+                  
+                  <label style={{fontWeight: 'bold', display: 'block', marginBottom: '5px', fontSize: '0.85rem'}}>Deskripsi</label>
+                  <textarea placeholder="Penjelasan singkat tentang inovasi ini..." value={iDeskripsi} onChange={e => setIDeskripsi(e.target.value)} required style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }} />
+                  
+                  <label style={{fontWeight: 'bold', display: 'block', marginBottom: '5px', fontSize: '0.85rem'}}>Link Website</label>
+                  <input type="text" placeholder="Gunakan awalan https://..." value={iLinkUrl} onChange={e => setILinkUrl(e.target.value)} required style={inputStyle} />
+                  
+                  <label style={{fontWeight: 'bold', display: 'block', marginBottom: '5px', fontSize: '0.85rem'}}>Link URL Gambar / Thumbnail (Opsional)</label>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '-5px', marginBottom: '10px' }}>
+                    *Biarkan kosong jika ingin sistem otomatis membuat *screenshot* dari website Anda.
+                  </p>
+                  <input type="text" placeholder="Gunakan awalan https://... (link gambar opsional)" value={iGambarUrl} onChange={e => setIGambarUrl(e.target.value)} style={inputStyle} />
+                  
+                  <label style={{fontWeight: 'bold', display: 'block', marginBottom: '5px', fontSize: '0.85rem'}}>Urutan Tampil (Opsional)</label>
+                  <input type="number" value={iUrutan} onChange={e => setIUrutan(parseInt(e.target.value) || 0)} style={inputStyle} />
+                  
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button type="submit" className="btn-primary" style={{ padding: '10px 20px' }}>{editingInovasiId ? 'Simpan Perubahan' : 'Tambah Inovasi'}</button>
+                    {editingInovasiId && <button type="button" onClick={resetInovasiForm} style={{ padding: '10px 20px', background: 'transparent', border: '1px solid var(--card-border)', color: 'var(--text-main)', borderRadius: '6px', cursor: 'pointer' }}>Batal Edit</button>}
+                  </div>
+                </form>
+              </div>
+
+              <div className="table-wrapper">
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', background: 'var(--card-bg)' }}>
+                  <thead>
+                    <tr style={{ background: 'rgba(128,128,128,0.1)', color: 'var(--text-heading)' }}>
+                      <th style={{ padding: '10px', border: '1px solid var(--card-border)', textAlign: 'left', width: '50px' }}>No</th>
+                      <th style={{ padding: '10px', border: '1px solid var(--card-border)', textAlign: 'left' }}>Judul Inovasi</th>
+                      <th style={{ padding: '10px', border: '1px solid var(--card-border)', textAlign: 'center', width: '150px' }}>Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {inovasiList.length === 0 ? (
+                      <tr><td colSpan={3} style={{ padding: '10px', textAlign: 'center', color: 'var(--text-muted)' }}>Belum ada inovasi.</td></tr>
+                    ) : (
+                      inovasiList.map((inov, index) => (
+                        <tr key={inov.id}>
+                          <td style={{ padding: '10px', border: '1px solid var(--card-border)', textAlign: 'center' }}>{index + 1}</td>
+                          <td style={{ padding: '10px', border: '1px solid var(--card-border)', color: 'var(--text-main)' }}>
+                            <strong>{inov.judul}</strong><br/>
+                            <a href={inov.link_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-color)', fontSize: '0.75rem' }}>{inov.link_url}</a>
+                          </td>
+                          <td style={{ padding: '10px', border: '1px solid var(--card-border)', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                            <button onClick={() => { setEditingInovasiId(inov.id); setIJudul(inov.judul); setIDeskripsi(inov.deskripsi); setILinkUrl(inov.link_url); setIGambarUrl(inov.gambar_url || ''); setIUrutan(inov.urutan || 0); }} style={{ padding: '4px 8px', background: 'var(--accent-color)', color: '#FFFFFF', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '5px' }}>Edit</button>
+                            <button onClick={() => handleDeleteInovasi(inov.id)} style={{ padding: '4px 8px', background: '#EF4444', color: '#FFFFFF', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Hapus</button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>

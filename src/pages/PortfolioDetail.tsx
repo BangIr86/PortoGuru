@@ -3,7 +3,6 @@ import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 
 export default function PortfolioDetail() {
-  const { id } = useParams();
   const { slug } = useParams();
   const [matkul, setMatkul] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -14,13 +13,11 @@ export default function PortfolioDetail() {
   useEffect(() => {
     window.scrollTo(0, 0);
     fetchDetailData();
-  }, [id]);
   }, [slug]);
 
   const fetchDetailData = async () => {
     try {
       setLoading(true);
-      const { data: mkData, error: mkError } = await supabase.from('mata_kuliah').select('*').eq('id', id).single();
       
       let mkData, mkError;
       const isNumeric = /^\d+$/.test(slug || '');
@@ -42,7 +39,6 @@ export default function PortfolioDetail() {
       let combinedTopics: any[] = [];
 
       if (mkData.has_topik !== false) {
-        const { data: topikData } = await supabase.from('topik').select('*').eq('mata_kuliah_id', id).order('id', { ascending: true });
         const { data: topikData } = await supabase.from('topik').select('*').eq('mata_kuliah_id', mkId).order('id', { ascending: true });
         const topikIds = topikData?.map(t => t.id) || [];
         
@@ -57,7 +53,6 @@ export default function PortfolioDetail() {
         })) || [];
         setMatkul({ ...mkData, topik: combinedTopics });
       } else {
-        const { data: aData } = await supabase.from('artefak').select('*').eq('mata_kuliah_id', id);
         const { data: aData } = await supabase.from('artefak').select('*').eq('mata_kuliah_id', mkId);
         if (aData) artefakData = aData;
         setMatkul({ ...mkData, artefakLangsung: artefakData });

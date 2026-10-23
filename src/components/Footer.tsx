@@ -7,7 +7,7 @@ export default function Footer() {
     <footer style={{ 
       borderTop: '1px solid var(--card-border)', 
       background: 'var(--card-bg)', 
-      padding: '40px 20px 20px',
+      padding: '25px 20px 15px',
       marginTop: 'auto'
     }}>
       <div className="container" style={{ 
@@ -15,8 +15,8 @@ export default function Footer() {
         flexWrap: 'wrap', 
         justifyContent: 'space-between', 
         alignItems: 'flex-start',
-        gap: '30px',
-        marginBottom: '30px'
+        gap: '20px',
+        marginBottom: '15px'
       }}>
         
         {/* Kolom 1: Identitas Utama */}
@@ -84,7 +84,7 @@ export default function Footer() {
       {/* Bagian Bawah: Copyright */}
       <div style={{ 
         textAlign: 'center', 
-        paddingTop: '20px', 
+        paddingTop: '15px', 
         borderTop: '1px dashed var(--card-border)',
         color: 'var(--text-muted)',
         fontSize: '0.85rem'

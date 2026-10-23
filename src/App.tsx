@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import About from './pages/About';
 import Portfolio from './pages/Portfolio';
 import PortfolioDetail from './pages/PortfolioDetail';
+import Innovation from './pages/Innovation';
 import Admin from './pages/Admin';
 import Contact from './pages/Contact';
 import NotFound from './pages/NotFound'; // <-- TAMBAHAN IMPORT NOT FOUND
@@ -109,6 +110,7 @@ function AppContent() {
               <Link to="/" onClick={closeMobileMenu} className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>Dashboard</Link>
               <Link to="/about" onClick={closeMobileMenu} className={`nav-link ${location.pathname === '/about' ? 'active' : ''}`}>Tentang Saya</Link>
               <Link to="/ppg-corner" onClick={closeMobileMenu} className={`nav-link ${location.pathname.startsWith('/ppg-corner') ? 'active' : ''}`}>PPG Corner</Link>
+              <Link to="/innovation-corner" onClick={closeMobileMenu} className={`nav-link ${location.pathname.startsWith('/innovation-corner') ? 'active' : ''}`}>Innovation Corner</Link>
               <Link to="/contact" onClick={closeMobileMenu} className={`nav-link ${location.pathname === '/contact' ? 'active' : ''}`}>Kontak</Link>
             </div>
 
@@ -154,6 +156,7 @@ function AppContent() {
           <Route path="/ppg-corner" element={<Portfolio />} />
           <Route path="/ppg-corner/:id" element={<PortfolioDetail />} />
           <Route path="/ppg-corner/:slug" element={<PortfolioDetail />} />
+          <Route path="/innovation-corner" element={<Innovation />} />
           <Route path="/contact" element={<Contact />} />
           
           {/* Rute /admin dipertahankan agar bisa dites di localhost:5173/admin */}
