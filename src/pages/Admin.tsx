@@ -52,9 +52,16 @@ export default function Admin() {
   const [editingInovasiId, setEditingInovasiId] = useState<number | null>(null);
   const [iJudul, setIJudul] = useState('');
   const [iDeskripsi, setIDeskripsi] = useState('');
+  const [iProblematika, setIProblematika] = useState('');
+  const [iTujuan, setITujuan] = useState('');
+  const [iSolusi, setISolusi] = useState('');
+  const [iDampak, setIDampak] = useState('');
+  const [iDokumentasiUrl, setIDokumentasiUrl] = useState('');
+  const [iDokumentasiFile, setIDokumentasiFile] = useState<File | null>(null);
   const [iLinkUrl, setILinkUrl] = useState('');
   const [iGambarUrl, setIGambarUrl] = useState('');
   const [iUrutan, setIUrutan] = useState<number>(0);
+  const [isUploadingInovasi, setIsUploadingInovasi] = useState(false);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -215,23 +222,70 @@ export default function Admin() {
   };
 
   // --- FUNGSI INOVASI ---
-  const resetInovasiForm = () => { setEditingInovasiId(null); setIJudul(''); setIDeskripsi(''); setILinkUrl(''); setIGambarUrl(''); setIUrutan(0); };
+  const resetInovasiForm = () => {
+    setEditingInovasiId(null);
+    setIJudul('');
+    setIDeskripsi('');
+    setIProblematika('');
+    setITujuan('');
+    setISolusi('');
+    setIDampak('');
+    setIDokumentasiUrl('');
+    setIDokumentasiFile(null);
+    setILinkUrl('');
+    setIGambarUrl('');
+    setIUrutan(0);
+  };
+
   const handleSaveInovasi = async (e: React.FormEvent) => {
     e.preventDefault();
-    let finalLinkUrl = iLinkUrl.trim();
-    if (finalLinkUrl && !/^https?:\/\//i.test(finalLinkUrl)) finalLinkUrl = 'https://' + finalLinkUrl;
-    
-    let finalGambarUrl = iGambarUrl.trim();
-    if (finalGambarUrl && !/^https?:\/\//i.test(finalGambarUrl)) finalGambarUrl = 'https://' + finalGambarUrl;
+    setIsUploadingInovasi(true);
 
-    const dataInovasi = { judul: iJudul, deskripsi: iDeskripsi, link_url: finalLinkUrl, gambar_url: finalGambarUrl, urutan: iUrutan };
-    
-    if (editingInovasiId) {
-      const { error } = await supabase.from('inovasi').update(dataInovasi).eq('id', editingInovasiId);
-      if (error) showToast('Gagal memperbarui inovasi: ' + error.message, 'error'); else { showToast('Inovasi diperbarui!', 'success'); fetchData(); resetInovasiForm(); }
-    } else {
-      const { error } = await supabase.from('inovasi').insert([dataInovasi]);
-      if (error) showToast('Gagal menambah inovasi: ' + error.message, 'error'); else { showToast('Inovasi ditambahkan!', 'success'); fetchData(); resetInovasiForm(); }
+    try {
+      let finalLinkUrl = iLinkUrl.trim();
+      if (finalLinkUrl && !/^https?:\/\//i.test(finalLinkUrl)) finalLinkUrl = 'https://' + finalLinkUrl;
+      
+      let finalGambarUrl = iGambarUrl.trim();
+      if (finalGambarUrl && !/^https?:\/\//i.test(finalGambarUrl)) finalGambarUrl = 'https://' + finalGambarUrl;
+
+      let finalDokumentasiUrl = iDokumentasiUrl.trim();
+      if (iDokumentasiFile) {
+        const fileExt = iDokumentasiFile.name.split('.').pop();
+        const fileName = `inovasi_dok/${Date.now()}.${fileExt}`;
+        const { error: uploadErr } = await supabase.storage.from('portfolio-files').upload(fileName, iDokumentasiFile);
+        if (uploadErr) throw uploadErr;
+        const { data: pubData } = supabase.storage.from('portfolio-files').getPublicUrl(fileName);
+        finalDokumentasiUrl = pubData.publicUrl;
+      }
+
+      const dataInovasi = {
+        judul: iJudul,
+        deskripsi: iDeskripsi,
+        problematika: iProblematika,
+        tujuan: iTujuan,
+        solusi: iSolusi,
+        dampak: iDampak,
+        dokumentasi_url: finalDokumentasiUrl,
+        link_url: finalLinkUrl,
+        gambar_url: finalGambarUrl,
+        urutan: iUrutan
+      };
+      
+      if (editingInovasiId) {
+        const { error } = await supabase.from('inovasi').update(dataInovasi).eq('id', editingInovasiId);
+        if (error) throw error;
+        showToast('Inovasi diperbarui!', 'success');
+      } else {
+        const { error } = await supabase.from('inovasi').insert([dataInovasi]);
+        if (error) throw error;
+        showToast('Inovasi ditambahkan!', 'success');
+      }
+      fetchData();
+      resetInovasiForm();
+    } catch (err: any) {
+      showToast('Gagal menyimpan inovasi: ' + err.message, 'error');
+    } finally {
+      setIsUploadingInovasi(false);
     }
   };
   const handleDeleteInovasi = async (id: number) => {
@@ -606,13 +660,55 @@ export default function Admin() {
                   <label style={{fontWeight: 'bold', display: 'block', marginBottom: '5px', fontSize: '0.85rem'}}>Judul Inovasi</label>
                   <input type="text" placeholder="Masukkan judul inovasi..." value={iJudul} onChange={e => setIJudul(e.target.value)} required style={inputStyle} />
                   
-                  <label style={{fontWeight: 'bold', display: 'block', marginBottom: '5px', fontSize: '0.85rem'}}>Deskripsi</label>
-                  <textarea placeholder="Penjelasan singkat tentang inovasi ini..." value={iDeskripsi} onChange={e => setIDeskripsi(e.target.value)} required style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }} />
+                  <label style={{fontWeight: 'bold', display: 'block', marginBottom: '5px', fontSize: '0.85rem'}}>Deskripsi Singkat</label>
+                  <textarea placeholder="Ringkasan atau gambaran umum tentang inovasi ini..." value={iDeskripsi} onChange={e => setIDeskripsi(e.target.value)} required style={{ ...inputStyle, minHeight: '70px', resize: 'vertical' }} />
                   
-                  <label style={{fontWeight: 'bold', display: 'block', marginBottom: '5px', fontSize: '0.85rem'}}>Link Website</label>
+                  {/* 4 PILAR INOVASI */}
+                  <div style={{ border: '1px solid var(--card-border)', borderRadius: '8px', padding: '16px', background: 'var(--card-bg)', marginBottom: '15px' }}>
+                    <h4 style={{ margin: '0 0 12px 0', color: 'var(--text-heading)', fontSize: '0.95rem' }}>✨ 4 Pilar Kajian Inovasi (Problematika, Tujuan, Solusi, Dampak)</h4>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '15px' }}>
+                      <div>
+                        <label style={{fontWeight: 'bold', display: 'block', marginBottom: '5px', fontSize: '0.85rem', color: '#D97706'}}>📌 Problematika</label>
+                        <textarea placeholder="Latar belakang masalah atau kesenjangan yang dihadapi..." value={iProblematika} onChange={e => setIProblematika(e.target.value)} style={{ ...inputStyle, minHeight: '90px', resize: 'vertical', marginBottom: 0 }} />
+                      </div>
+                      <div>
+                        <label style={{fontWeight: 'bold', display: 'block', marginBottom: '5px', fontSize: '0.85rem', color: 'var(--accent-color)'}}>🎯 Tujuan</label>
+                        <textarea placeholder="Tujuan yang ingin dicapai melalui inovasi ini..." value={iTujuan} onChange={e => setITujuan(e.target.value)} style={{ ...inputStyle, minHeight: '90px', resize: 'vertical', marginBottom: 0 }} />
+                      </div>
+                      <div>
+                        <label style={{fontWeight: 'bold', display: 'block', marginBottom: '5px', fontSize: '0.85rem', color: '#059669'}}>💡 Solusi</label>
+                        <textarea placeholder="Solusi inovatif dan cara kerja sistem/website ini..." value={iSolusi} onChange={e => setISolusi(e.target.value)} style={{ ...inputStyle, minHeight: '90px', resize: 'vertical', marginBottom: 0 }} />
+                      </div>
+                      <div>
+                        <label style={{fontWeight: 'bold', display: 'block', marginBottom: '5px', fontSize: '0.85rem', color: '#7C3AED'}}>📈 Dampak</label>
+                        <textarea placeholder="Dampak nyata / hasil yang dicapai setelah penerapan..." value={iDampak} onChange={e => setIDampak(e.target.value)} style={{ ...inputStyle, minHeight: '90px', resize: 'vertical', marginBottom: 0 }} />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* DOKUMENTASI & MEDIA */}
+                  <div style={{ border: '1px solid var(--card-border)', borderRadius: '8px', padding: '16px', background: 'var(--card-bg)', marginBottom: '15px' }}>
+                    <h4 style={{ margin: '0 0 12px 0', color: 'var(--text-heading)', fontSize: '0.95rem' }}>📸 Dokumentasi Inovasi</h4>
+                    <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '-8px', marginBottom: '12px' }}>
+                      Unggah foto bukti implementasi inovasi di kelas/sekolah, ATAU masukkan tautan (link Google Drive / YouTube / foto eksternal).
+                    </p>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '15px' }}>
+                      <div>
+                        <label style={{fontWeight: 'bold', display: 'block', marginBottom: '5px', fontSize: '0.85rem'}}>Unggah Foto Dokumentasi (File)</label>
+                        <input type="file" accept="image/*" onChange={e => setIDokumentasiFile(e.target.files ? e.target.files[0] : null)} style={{ ...inputStyle, padding: '9px', background: 'var(--card-bg)', marginBottom: 0 }} />
+                      </div>
+                      <div>
+                        <label style={{fontWeight: 'bold', display: 'block', marginBottom: '5px', fontSize: '0.85rem'}}>Atau Link Dokumentasi (URL)</label>
+                        <input type="text" placeholder="https://... (link foto / video / drive)" value={iDokumentasiUrl} onChange={e => setIDokumentasiUrl(e.target.value)} style={{ ...inputStyle, marginBottom: 0 }} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <label style={{fontWeight: 'bold', display: 'block', marginBottom: '5px', fontSize: '0.85rem'}}>Link Website Inovasi</label>
                   <input type="text" placeholder="Gunakan awalan https://..." value={iLinkUrl} onChange={e => setILinkUrl(e.target.value)} required style={inputStyle} />
                   
-                  <label style={{fontWeight: 'bold', display: 'block', marginBottom: '5px', fontSize: '0.85rem'}}>Link URL Gambar / Thumbnail (Opsional)</label>
+                  <label style={{fontWeight: 'bold', display: 'block', marginBottom: '5px', fontSize: '0.85rem'}}>Link URL Gambar / Thumbnail Website (Opsional)</label>
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '-5px', marginBottom: '10px' }}>
                     *Biarkan kosong jika ingin sistem otomatis membuat *screenshot* dari website Anda.
                   </p>
@@ -621,8 +717,10 @@ export default function Admin() {
                   <label style={{fontWeight: 'bold', display: 'block', marginBottom: '5px', fontSize: '0.85rem'}}>Urutan Tampil (Opsional)</label>
                   <input type="number" value={iUrutan} onChange={e => setIUrutan(parseInt(e.target.value) || 0)} style={inputStyle} />
                   
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <button type="submit" className="btn-primary" style={{ padding: '10px 20px' }}>{editingInovasiId ? 'Simpan Perubahan' : 'Tambah Inovasi'}</button>
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                    <button type="submit" className="btn-primary" disabled={isUploadingInovasi} style={{ padding: '10px 20px' }}>
+                      {isUploadingInovasi ? 'Menyimpan & Mengunggah...' : editingInovasiId ? 'Simpan Perubahan' : 'Tambah Inovasi'}
+                    </button>
                     {editingInovasiId && <button type="button" onClick={resetInovasiForm} style={{ padding: '10px 20px', background: 'transparent', border: '1px solid var(--card-border)', color: 'var(--text-main)', borderRadius: '6px', cursor: 'pointer' }}>Batal Edit</button>}
                   </div>
                 </form>
@@ -649,7 +747,20 @@ export default function Admin() {
                             <a href={inov.link_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-color)', fontSize: '0.75rem' }}>{inov.link_url}</a>
                           </td>
                           <td style={{ padding: '10px', border: '1px solid var(--card-border)', textAlign: 'center', whiteSpace: 'nowrap' }}>
-                            <button onClick={() => { setEditingInovasiId(inov.id); setIJudul(inov.judul); setIDeskripsi(inov.deskripsi); setILinkUrl(inov.link_url); setIGambarUrl(inov.gambar_url || ''); setIUrutan(inov.urutan || 0); }} style={{ padding: '4px 8px', background: 'var(--accent-color)', color: '#FFFFFF', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '5px' }}>Edit</button>
+                            <button onClick={() => {
+                              setEditingInovasiId(inov.id);
+                              setIJudul(inov.judul);
+                              setIDeskripsi(inov.deskripsi || '');
+                              setIProblematika(inov.problematika || '');
+                              setITujuan(inov.tujuan || '');
+                              setISolusi(inov.solusi || '');
+                              setIDampak(inov.dampak || '');
+                              setIDokumentasiUrl(inov.dokumentasi_url || '');
+                              setIDokumentasiFile(null);
+                              setILinkUrl(inov.link_url);
+                              setIGambarUrl(inov.gambar_url || '');
+                              setIUrutan(inov.urutan || 0);
+                            }} style={{ padding: '4px 8px', background: 'var(--accent-color)', color: '#FFFFFF', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '5px' }}>Edit</button>
                             <button onClick={() => handleDeleteInovasi(inov.id)} style={{ padding: '4px 8px', background: '#EF4444', color: '#FFFFFF', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Hapus</button>
                           </td>
                         </tr>

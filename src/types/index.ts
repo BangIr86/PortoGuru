@@ -47,6 +47,11 @@ export interface Inovasi {
   id: number;
   judul: string;
   deskripsi: string;
+  problematika?: string;
+  tujuan?: string;
+  solusi?: string;
+  dampak?: string;
+  dokumentasi_url?: string;
   link_url: string;
   gambar_url?: string;
   urutan: number;
