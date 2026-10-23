@@ -5,6 +5,7 @@ import About from './pages/About';
 import Portfolio from './pages/Portfolio';
 import PortfolioDetail from './pages/PortfolioDetail';
 import Innovation from './pages/Innovation';
+import InnovationDetail from './pages/InnovationDetail';
 import Admin from './pages/Admin';
 import Contact from './pages/Contact';
 import NotFound from './pages/NotFound'; // <-- TAMBAHAN IMPORT NOT FOUND
@@ -156,6 +157,7 @@ function AppContent() {
           <Route path="/ppg-corner" element={<Portfolio />} />
           <Route path="/ppg-corner/:slug" element={<PortfolioDetail />} />
           <Route path="/innovation-corner" element={<Innovation />} />
+          <Route path="/innovation-corner/:id" element={<InnovationDetail />} />
           <Route path="/contact" element={<Contact />} />
           
           {/* Rute /admin dipertahankan agar bisa dites di localhost:5173/admin */}
