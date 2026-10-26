@@ -161,6 +161,7 @@ export default function About() {
             <div className="bio-item"><span className="bio-label">Nama Lengkap</span><span className="bio-value">{profil.nama_lengkap}</span></div>
             <div className="bio-item"><span className="bio-label">Gelar/Status</span><span className="bio-value">{profil.gelar_status}</span></div>
             <div className="bio-item"><span className="bio-label">TTL</span><span className="bio-value">{profil.tempat_tanggal_lahir}</span></div>
+            <div className="bio-item"><span className="bio-label">Asal Daerah</span><span className="bio-value">{profil.asal_daerah || '-'}</span></div>
             <div className="bio-item"><span className="bio-label">Email</span><span className="bio-value">{profil.email}</span></div>
           </section>
 

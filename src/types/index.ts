@@ -4,6 +4,7 @@ export interface Profil {
   gelar_status: string;
   deskripsi_home: string;
   tempat_tanggal_lahir: string;
+  asal_daerah?: string;
   universitas: string;
   program_studi: string;
   email: string;

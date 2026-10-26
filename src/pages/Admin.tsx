@@ -95,7 +95,7 @@ export default function Admin() {
     e.preventDefault();
     if (!profil) return;
     const { error } = await supabase.from('profil').update({
-      nama_lengkap: profil.nama_lengkap, gelar_status: profil.gelar_status, deskripsi_home: profil.deskripsi_home, tempat_tanggal_lahir: profil.tempat_tanggal_lahir, universitas: profil.universitas, program_studi: profil.program_studi, email: profil.email, filosofi_mengajar: profil.filosofi_mengajar, visi_pendidikan_indonesia: profil.visi_pendidikan_indonesia || '', visi_guru_profesional: profil.visi_guru_profesional || '', misi: profil.misi || '', riwayat_pendidikan: profil.riwayat_pendidikan
+      nama_lengkap: profil.nama_lengkap, gelar_status: profil.gelar_status, deskripsi_home: profil.deskripsi_home, tempat_tanggal_lahir: profil.tempat_tanggal_lahir, asal_daerah: profil.asal_daerah || '', universitas: profil.universitas, program_studi: profil.program_studi, email: profil.email, filosofi_mengajar: profil.filosofi_mengajar, visi_pendidikan_indonesia: profil.visi_pendidikan_indonesia || '', visi_guru_profesional: profil.visi_guru_profesional || '', misi: profil.misi || '', riwayat_pendidikan: profil.riwayat_pendidikan
     }).eq('id', 1);
     if (error) showToast('Gagal merubah biodata: ' + error.message, 'error'); else showToast('Biodata berhasil diperbarui!', 'success');
   };
@@ -388,6 +388,8 @@ export default function Admin() {
                   <textarea value={profil.deskripsi_home} onChange={e => setProfil({...profil, deskripsi_home: e.target.value})} rows={3} style={inputStyle} required />
                   <label style={{fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--text-main)'}}>Tempat, Tanggal Lahir</label>
                   <input type="text" value={profil.tempat_tanggal_lahir} onChange={e => setProfil({...profil, tempat_tanggal_lahir: e.target.value})} style={inputStyle} required />
+                  <label style={{fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--text-main)'}}>Asal Daerah</label>
+                  <input type="text" value={profil.asal_daerah || ''} onChange={e => setProfil({...profil, asal_daerah: e.target.value})} placeholder="Contoh: Malang, Jawa Timur" style={inputStyle} />
                   <label style={{fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--text-main)'}}>Universitas</label>
                   <input type="text" value={profil.universitas} onChange={e => setProfil({...profil, universitas: e.target.value})} style={inputStyle} required />
                   <label style={{fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--text-main)'}}>Program Studi</label>
