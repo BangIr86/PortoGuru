@@ -8,6 +8,9 @@ export interface Profil {
   program_studi: string;
   email: string;
   filosofi_mengajar: string;
+  visi_pendidikan_indonesia?: string;
+  visi_guru_profesional?: string;
+  misi?: string;
   riwayat_pendidikan: string;
   foto_profil?: string;   
 }
@@ -29,7 +32,6 @@ export interface Topik {
   uraian_topik: string;
   refleksi?: string;
   mata_kuliah_id: number;
-
 }
 
 export interface Artefak {

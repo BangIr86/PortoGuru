@@ -95,7 +95,7 @@ export default function Admin() {
     e.preventDefault();
     if (!profil) return;
     const { error } = await supabase.from('profil').update({
-      nama_lengkap: profil.nama_lengkap, gelar_status: profil.gelar_status, deskripsi_home: profil.deskripsi_home, tempat_tanggal_lahir: profil.tempat_tanggal_lahir, universitas: profil.universitas, program_studi: profil.program_studi, email: profil.email, filosofi_mengajar: profil.filosofi_mengajar, riwayat_pendidikan: profil.riwayat_pendidikan
+      nama_lengkap: profil.nama_lengkap, gelar_status: profil.gelar_status, deskripsi_home: profil.deskripsi_home, tempat_tanggal_lahir: profil.tempat_tanggal_lahir, universitas: profil.universitas, program_studi: profil.program_studi, email: profil.email, filosofi_mengajar: profil.filosofi_mengajar, visi_pendidikan_indonesia: profil.visi_pendidikan_indonesia || '', visi_guru_profesional: profil.visi_guru_profesional || '', misi: profil.misi || '', riwayat_pendidikan: profil.riwayat_pendidikan
     }).eq('id', 1);
     if (error) showToast('Gagal merubah biodata: ' + error.message, 'error'); else showToast('Biodata berhasil diperbarui!', 'success');
   };
@@ -396,6 +396,37 @@ export default function Admin() {
                   <input type="email" value={profil.email} onChange={e => setProfil({...profil, email: e.target.value})} style={inputStyle} required />
                   <label style={{fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--text-main)'}}>Filosofi Mengajar</label>
                   <textarea value={profil.filosofi_mengajar} onChange={e => setProfil({...profil, filosofi_mengajar: e.target.value})} rows={3} style={inputStyle} required />
+
+                  <div style={{ border: '1px solid var(--card-border)', borderRadius: '8px', padding: '16px', background: 'var(--bg-color)', margin: '15px 0' }}>
+                    <h4 style={{ margin: '0 0 12px 0', color: 'var(--text-heading)', fontSize: '0.95rem' }}>✨ Visi & Misi Guru Profesional</h4>
+                    
+                    <label style={{fontWeight: 'bold', fontSize: '0.85rem', color: '#D97706', display: 'block', marginBottom: '5px'}}>🇮🇩 Visi untuk Pendidikan Indonesia</label>
+                    <textarea 
+                      value={profil.visi_pendidikan_indonesia || ''} 
+                      onChange={e => setProfil({...profil, visi_pendidikan_indonesia: e.target.value})} 
+                      placeholder="Tuliskan visi Anda terhadap masa depan pendidikan Indonesia..." 
+                      rows={3} 
+                      style={inputStyle} 
+                    />
+
+                    <label style={{fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--accent-color)', display: 'block', marginBottom: '5px'}}>🎓 Visi Diri sebagai Calon Guru Profesional</label>
+                    <textarea 
+                      value={profil.visi_guru_profesional || ''} 
+                      onChange={e => setProfil({...profil, visi_guru_profesional: e.target.value})} 
+                      placeholder="Tuliskan cita-cita dan komitmen diri Anda sebagai pendidik profesional..." 
+                      rows={3} 
+                      style={inputStyle} 
+                    />
+
+                    <label style={{fontWeight: 'bold', fontSize: '0.85rem', color: '#059669', display: 'block', marginBottom: '5px'}}>🎯 Misi</label>
+                    <textarea 
+                      value={profil.misi || ''} 
+                      onChange={e => setProfil({...profil, misi: e.target.value})} 
+                      placeholder="Langkah-langkah nyata atau misi untuk mewujudkan visi tersebut (bisa gunakan baris baru atau penomoran 1, 2, 3)..." 
+                      rows={4} 
+                      style={{ ...inputStyle, marginBottom: 0 }} 
+                    />
+                  </div>
                   <label style={{fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--text-main)'}}>Riwayat Pendidikan (Pisahkan dengan | )</label>
                   <textarea value={profil.riwayat_pendidikan} onChange={e => setProfil({...profil, riwayat_pendidikan: e.target.value})} rows={3} style={inputStyle} required />
                   <button type="submit" className="btn-primary" style={{ marginTop: '10px', width: '100%' }}>Perbarui Biodata</button>

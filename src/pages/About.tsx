@@ -154,7 +154,7 @@ export default function About() {
           </div>
         </div>
 
-        {/* BAGIAN DETAIL BIODATA & FILOSOFI */}
+        {/* BAGIAN DETAIL BIODATA, VISI-MISI & FILOSOFI */}
         <div className="about-details">
           <section className="card">
             <h2 className="section-title">Profil & Kontak</h2>
@@ -170,6 +170,49 @@ export default function About() {
               "{profil.filosofi_mengajar}"
             </p>
           </section>
+
+          {/* VISI & MISI PENDIDIK */}
+          {(profil.visi_pendidikan_indonesia || profil.visi_guru_profesional || profil.misi) && (
+            <section className="card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <h2 className="section-title" style={{ margin: 0 }}>Visi & Misi Pendidik</h2>
+
+              {/* Visi untuk Pendidikan Indonesia */}
+              {profil.visi_pendidikan_indonesia && (
+                <div style={{ background: 'var(--bg-color)', padding: '20px', borderRadius: '12px', border: '1px solid var(--card-border)', borderLeft: '4px solid #D97706' }}>
+                  <h3 style={{ margin: '0 0 10px 0', color: '#D97706', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    🇮🇩 Visi untuk Pendidikan Indonesia
+                  </h3>
+                  <p style={{ margin: 0, color: 'var(--text-main)', lineHeight: '1.8', fontSize: '0.98rem', whiteSpace: 'pre-line' }}>
+                    {profil.visi_pendidikan_indonesia}
+                  </p>
+                </div>
+              )}
+
+              {/* Visi Diri sebagai Calon Guru Profesional */}
+              {profil.visi_guru_profesional && (
+                <div style={{ background: 'var(--bg-color)', padding: '20px', borderRadius: '12px', border: '1px solid var(--card-border)', borderLeft: '4px solid var(--accent-color)' }}>
+                  <h3 style={{ margin: '0 0 10px 0', color: 'var(--accent-color)', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    🎓 Visi Diri sebagai Calon Guru Profesional
+                  </h3>
+                  <p style={{ margin: 0, color: 'var(--text-main)', lineHeight: '1.8', fontSize: '0.98rem', whiteSpace: 'pre-line' }}>
+                    {profil.visi_guru_profesional}
+                  </p>
+                </div>
+              )}
+
+              {/* Misi */}
+              {profil.misi && (
+                <div style={{ background: 'var(--bg-color)', padding: '20px', borderRadius: '12px', border: '1px solid var(--card-border)', borderLeft: '4px solid #059669' }}>
+                  <h3 style={{ margin: '0 0 10px 0', color: '#059669', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    🎯 Misi Mewujudkan Visi
+                  </h3>
+                  <p style={{ margin: 0, color: 'var(--text-main)', lineHeight: '1.8', fontSize: '0.98rem', whiteSpace: 'pre-line' }}>
+                    {profil.misi}
+                  </p>
+                </div>
+              )}
+            </section>
+          )}
 
           <section className="card">
             <h2 className="section-title">Riwayat Pendidikan</h2>
