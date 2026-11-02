@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { Link } from 'react-router-dom';
-import type { Profil } from '../types';
+import type { Profil, MataKuliah } from '../types';
 
 export default function Admin() {
   const [isAuth, setIsAuth] = useState(false);
@@ -76,8 +76,18 @@ export default function Admin() {
     const { data: files } = await supabase.storage.from('portfolio-files').list('slideshow_profil');
     if (files) setSlideshowFiles(files.filter(f => f.name !== '.emptyFolderPlaceholder'));
 
-    const { data: mkData } = await supabase.from('mata_kuliah').select('*').order('urutan', { ascending: true });
-    if (mkData) setMataKuliahList(mkData);
+    const { data: mkData } = await supabase.from('mata_kuliah').select('*');
+    if (mkData) {
+      const sortedMK = (mkData as MataKuliah[]).sort((a, b) => {
+        const numA = parseInt((a.semester || '').match(/\d+/)?.[0] || '999', 10);
+        const numB = parseInt((b.semester || '').match(/\d+/)?.[0] || '999', 10);
+        if (numA !== numB) return numA - numB;
+        return (a.urutan || 0) - (b.urutan || 0);
+      });
+      setMataKuliahList(sortedMK);
+    }
+
+
     
     const { data: tData } = await supabase.from('topik').select('*').order('id', { ascending: true });
     if (tData) setTopikList(tData);

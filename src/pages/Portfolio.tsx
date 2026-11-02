@@ -10,12 +10,18 @@ export default function Portfolio() {
   useEffect(() => {
     window.scrollTo(0, 0);
     const fetchMataKuliah = async () => {
-      // PENGURUTAN BERDASARKAN KOLOM 'urutan'
-      const { data, error } = await supabase.from('mata_kuliah').select('*').order('urutan', { ascending: true });
+      // PENGURUTAN UTAMA BERDASARKAN SEMESTER (dari semester 1), KEMUDIAN URUTAN
+      const { data, error } = await supabase.from('mata_kuliah').select('*');
       if (error) {
         console.error('Error fetching mata kuliah:', error.message);
       } else {
-        setMataKuliahList((data as MataKuliah[]) || []);
+        const sorted = ((data as MataKuliah[]) || []).sort((a, b) => {
+          const numA = parseInt((a.semester || '').match(/\d+/)?.[0] || '999', 10);
+          const numB = parseInt((b.semester || '').match(/\d+/)?.[0] || '999', 10);
+          if (numA !== numB) return numA - numB;
+          return (a.urutan || 0) - (b.urutan || 0);
+        });
+        setMataKuliahList(sorted);
       }
       setLoading(false);
     };
@@ -39,7 +45,7 @@ export default function Portfolio() {
         </p>
       </div>
 
-      {/* DAFTAR MATA KULIAH (Kotak Fix & Kecil) */}
+      {/* DAFTAR MATA KULIAH (Diurutkan dari Semester 1) */}
       {mataKuliahList.length === 0 ? (
         <div className="card" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
           Belum ada mata kuliah yang ditambahkan.
@@ -55,7 +61,7 @@ export default function Portfolio() {
               <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '12px', paddingTop: '15px' }}>
                 {mk.semester && (
                   <div style={{ display: 'inline-block', background: 'var(--accent-glow)', color: 'var(--accent-color)', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold' }}>
-                    Semester {mk.semester}
+                    Semester {mk.semester.replace(/semester/i, '').trim()}
                   </div>
                 )}
                 
