@@ -148,58 +148,57 @@ export default function PortfolioDetail() {
           {renderRefleksi(matkul.refleksi)}
         </div>
 
-        {/* SPLIT SCREEN ARTEFAK (Sesuai Gambar Request) */}
-        <h2 style={{ color: 'var(--text-heading)', marginBottom: '20px' }}>Koleksi Artefak Pembelajaran</h2>
-        
-        {allArtefak.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Belum ada artefak di mata kuliah ini.</p>
-        ) : (
-          <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'flex-start' }}>
-            
-            {/* KIRI: DAFTAR TOMBOL ARTEFAK (Disembunyikan jika artefak hanya 1) */}
-            {allArtefak.length > 1 && (
-              <div style={{ flex: '1 1 250px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {allArtefak.map((a: any) => {
-                  const isActive = selectedArtefak?.id === a.id;
-                  return (
-                    <button
-                      key={a.id}
-                      onClick={() => setSelectedArtefak(a)}
-                      style={{
-                        padding: '15px', textAlign: 'left', borderRadius: '8px', cursor: 'pointer',
-                        background: isActive ? 'var(--accent-glow)' : 'var(--card-bg)',
-                        border: `1px solid ${isActive ? 'var(--accent-color)' : 'var(--card-border)'}`,
-                        color: isActive ? 'var(--accent-color)' : 'var(--text-main)',
-                        fontWeight: isActive ? 'bold' : 'normal',
-                        transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '10px'
-                      }}
-                    >
-                      <span style={{ fontSize: '1.5rem' }}>{a.jenis.includes('Video') ? '🎥' : a.jenis.includes('Foto') ? '📸' : '📄'}</span>
-                      <span>{a.judul}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* KANAN: PREVIEW ARTEFAK */}
-            <div style={{ flex: '3 1 320px', maxWidth: '100%', boxSizing: 'border-box', height: '600px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column' }}>
-              {selectedArtefak && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', paddingBottom: '15px', borderBottom: '1px solid var(--card-border)' }}>
-                  <div>
-                    <h3 style={{ margin: 0, color: 'var(--text-heading)' }}>{selectedArtefak.judul}</h3>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{selectedArtefak.jenis}</span>
-                  </div>
-                  <a href={selectedArtefak.link_url} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ padding: '8px 15px', fontSize: '0.85rem' }}>
-                    Buka di Tab Baru ↗
-                  </a>
+        {/* KOLEKSI ARTEFAK PEMBELAJARAN (Opsional: Hanya tampil jika ada artefak yang diisi) */}
+        {allArtefak.length > 0 && (
+          <div>
+            <h2 style={{ color: 'var(--text-heading)', marginBottom: '20px' }}>Koleksi Artefak Pembelajaran</h2>
+            <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+              
+              {/* KIRI: DAFTAR TOMBOL ARTEFAK (Disembunyikan jika artefak hanya 1) */}
+              {allArtefak.length > 1 && (
+                <div style={{ flex: '1 1 250px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {allArtefak.map((a: any) => {
+                    const isActive = selectedArtefak?.id === a.id;
+                    return (
+                      <button
+                        key={a.id}
+                        onClick={() => setSelectedArtefak(a)}
+                        style={{
+                          padding: '15px', textAlign: 'left', borderRadius: '8px', cursor: 'pointer',
+                          background: isActive ? 'var(--accent-glow)' : 'var(--card-bg)',
+                          border: `1px solid ${isActive ? 'var(--accent-color)' : 'var(--card-border)'}`,
+                          color: isActive ? 'var(--accent-color)' : 'var(--text-main)',
+                          fontWeight: isActive ? 'bold' : 'normal',
+                          transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '10px'
+                        }}
+                      >
+                        <span style={{ fontSize: '1.5rem' }}>{a.jenis.includes('Video') ? '🎥' : a.jenis.includes('Foto') ? '📸' : '📄'}</span>
+                        <span>{a.judul}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
-              <div style={{ flex: 1, background: '#F8FAFC', borderRadius: '8px', overflow: 'hidden' }}>
-                {renderPreviewContent(selectedArtefak)}
-              </div>
-            </div>
 
+              {/* KANAN: PREVIEW ARTEFAK */}
+              <div style={{ flex: '3 1 320px', maxWidth: '100%', boxSizing: 'border-box', height: '600px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column' }}>
+                {selectedArtefak && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', paddingBottom: '15px', borderBottom: '1px solid var(--card-border)' }}>
+                    <div>
+                      <h3 style={{ margin: 0, color: 'var(--text-heading)' }}>{selectedArtefak.judul}</h3>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{selectedArtefak.jenis}</span>
+                    </div>
+                    <a href={selectedArtefak.link_url} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ padding: '8px 15px', fontSize: '0.85rem' }}>
+                      Buka di Tab Baru ↗
+                    </a>
+                  </div>
+                )}
+                <div style={{ flex: 1, background: '#F8FAFC', borderRadius: '8px', overflow: 'hidden' }}>
+                  {renderPreviewContent(selectedArtefak)}
+                </div>
+              </div>
+
+            </div>
           </div>
         )}
 
