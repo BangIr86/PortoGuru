@@ -63,7 +63,7 @@ export default function Admin() {
   const [iUrutan, setIUrutan] = useState<number>(0);
   const [isUploadingInovasi, setIsUploadingInovasi] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (passcode === 'khoirulibad86') { setIsAuth(true); showToast('Berhasil masuk ke panel admin!', 'success'); } 
     else { showToast('Kata sandi salah!', 'error'); }
@@ -101,7 +101,7 @@ export default function Admin() {
 
   useEffect(() => { if (isAuth) fetchData(); }, [isAuth]);
 
-  const handleUpdateProfil = async (e: React.FormEvent) => {
+  const handleUpdateProfil = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!profil) return;
     const { error } = await supabase.from('profil').update({
@@ -137,7 +137,7 @@ export default function Admin() {
   
   const generateSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
-  const handleSaveMK = async (e: React.FormEvent) => {
+  const handleSaveMK = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const mkRefleksi4C = JSON.stringify({ connection: mkConn, challenge: mkChal, concept: mkConc, change: mkChan });
     const dataMK = { nama_mata_kuliah: mkNama, slug: generateSlug(mkNama), deskripsi_singkat: mkDeskripsi, urutan: mkUrutan, semester: mkSemester, has_topik: mkHasTopik, refleksi: mkRefleksi4C };
@@ -160,7 +160,7 @@ export default function Admin() {
 
   // --- FUNGSI TOPIK ---
   const resetTopikForm = () => { setEditingTopikId(null); setTNama(''); setTUraian(''); setTRefleksi(''); };
-  const handleSaveTopik = async (e: React.FormEvent) => {
+  const handleSaveTopik = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if(!managingMatkulId) return;
     const dataTopik = { nama_topik: tNama, uraian_topik: tUraian, refleksi: tRefleksi, mata_kuliah_id: managingMatkulId };
@@ -183,7 +183,7 @@ export default function Admin() {
 
   // --- FUNGSI ARTEFAK ---
   const resetArtefakForm = () => { setEditingArtefakId(null); setAJudul(''); setAJenis('Dokumen / PDF'); setALink(''); setAFile(null); setATopikId(''); };
-  const handleSaveArtefak = async (e: React.FormEvent) => {
+  const handleSaveArtefak = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const isTopikActive = activeMatkulData?.has_topik !== false;
     if (isTopikActive && !aTopikId) return showToast('Pilih Topik terlebih dahulu!', 'error');
@@ -247,7 +247,7 @@ export default function Admin() {
     setIUrutan(0);
   };
 
-  const handleSaveInovasi = async (e: React.FormEvent) => {
+  const handleSaveInovasi = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsUploadingInovasi(true);
 
